@@ -152,7 +152,7 @@ export default function SignupPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Alex Rivers"
+                    placeholder="Haseeb Rivers"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-[#ebe9e4] border border-[#d4d1c8] rounded-xl pl-10 pr-4 py-3 font-medium focus:outline-none focus:border-[#121212] text-sm"
@@ -167,7 +167,7 @@ export default function SignupPage() {
                   <input
                     type="email"
                     required
-                    placeholder="alex@example.com"
+                    placeholder="Haseeb@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-[#ebe9e4] border border-[#d4d1c8] rounded-xl pl-10 pr-4 py-3 font-medium focus:outline-none focus:border-[#121212] text-sm"

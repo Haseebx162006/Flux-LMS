@@ -123,7 +123,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Signature & Seal */}
             <div className="pt-4 flex items-center justify-between">
               <div className="text-left space-y-1">
-                <div className="font-script text-lg text-[#121212] font-bold italic">Marcus Vance</div>
+                <div className="font-script text-lg text-[#121212] font-bold italic">Haseeb</div>
                 <div className="text-[10px] font-bold text-[#5a5955] uppercase">Lead Platform Instructor</div>
               </div>
 

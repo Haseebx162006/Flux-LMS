@@ -26,7 +26,7 @@ async function main() {
     where: { email: "admin@fluxlms.com" },
     update: {},
     create: {
-      name: "Marcus Vance",
+      name: "Haseeb ",
       email: "admin@fluxlms.com",
       password: hashedPassword,
       isVerified: true,

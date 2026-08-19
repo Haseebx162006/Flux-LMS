@@ -20,7 +20,7 @@ export const MOCK_COURSES: Course[] = [
     category: "Web Development",
     level: "Intermediate",
     instructor: {
-      name: "Marcus Vance",
+      name: "Haseeb",
       role: "Lead Creative Technologist",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80"
     },
