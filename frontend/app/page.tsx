@@ -199,6 +199,14 @@ function HomeContent() {
               onDeleteCourse={(courseId) => {
                 setCourses(courses.filter(c => c.id !== courseId));
               }}
+              onRefreshCourses={async () => {
+                try {
+                  const fetchedCourses = await getCourses();
+                  setCourses(fetchedCourses || []);
+                } catch (err) {
+                  console.error("Error refreshing courses list:", err);
+                }
+              }}
             />
           </div>
         )}

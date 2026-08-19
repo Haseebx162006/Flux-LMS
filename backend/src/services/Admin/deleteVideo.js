@@ -1,30 +1,38 @@
 const prisma = require('../../config/prisma');
-exports.deletevideo = async (data) => {
-    const {userid, videoId, courseId } = data;
-    if (!courseId) {
-        throw new Error("Course ID is required");
+
+exports.deleteVideo = async (data) => {
+    const { userid, user_id, videoId, courseId, course_id } = data;
+    const cleanVideoId = Number(videoId);
+    const cleanCourseId = (courseId || course_id) ? Number(courseId || course_id) : null;
+
+    if (!cleanVideoId) {
+        throw new Error("Video ID is required");
     }
 
     try {
-        const course = await prisma.course.findUnique({
-            where: { id: courseId },
-        });
-        
-        if (!course) {
-            throw new Error("Course not found");
-        }
         const video = await prisma.video.findUnique({   
-            where: { id: videoId },
+            where: { id: cleanVideoId },
         });
+
         if (!video) {
             throw new Error("Video not found");
         }
+
+        if (cleanCourseId && video.courseId !== cleanCourseId) {
+            throw new Error("Video does not belong to this course");
+        }
+
         await prisma.video.delete({
-            where: { id: videoId },
+            where: { id: cleanVideoId },
         });
-        return { message: "Video deleted successfully" };
+
+        return { message: "Video deleted successfully", deletedVideoId: cleanVideoId };
     }
     catch (error) {
-        throw new Error(error.message);
+        console.error("Error in deleteVideo:", error);
+        throw new Error(error.message || "Failed to delete video");
     }
-}
+};
+
+exports.deletevideo = exports.deleteVideo;
+

@@ -19,5 +19,7 @@ router.delete('/:id', authenticateUser, authorizeAdmin, courseController.deleteC
 // Admin video management endpoints
 router.post('/:courseId/videos', authenticateUser, authorizeAdmin, courseController.addVideo);
 router.delete('/:courseId/videos/:videoId', authenticateUser, authorizeAdmin, courseController.deleteVideo);
+router.delete('/videos/:videoId', authenticateUser, authorizeAdmin, courseController.deleteVideo);
 
 module.exports = router;
+

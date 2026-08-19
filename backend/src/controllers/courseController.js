@@ -167,17 +167,17 @@ exports.addVideo = async (req, res) => {
     }
 };
 
-// DELETE /api/courses/:courseId/videos/:videoId (Admin)
+// DELETE /api/courses/:courseId/videos/:videoId or /api/courses/videos/:videoId (Admin)
 exports.deleteVideo = async (req, res) => {
     try {
-        const courseId = Number(req.params.courseId);
+        const courseId = req.params.courseId ? Number(req.params.courseId) : null;
         const videoId = Number(req.params.videoId);
         const user_id = req.user.id;
 
         const result = await deleteVideoService.deleteVideo({
             videoId,
             user_id,
-            course_id: courseId
+            courseId
         });
 
         return res.status(200).json(result);

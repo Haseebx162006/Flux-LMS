@@ -35,12 +35,14 @@ interface AdminDashboardProps {
   courses: Course[];
   onAddCourse: (newCourse: Course) => void;
   onDeleteCourse: (courseId: number) => void;
+  onRefreshCourses?: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   courses,
   onAddCourse,
   onDeleteCourse,
+  onRefreshCourses,
 }) => {
   const [activeAdminTab, setActiveAdminTab] = useState<'courses' | 'users' | 'videos'>('courses');
 
@@ -48,6 +50,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showAddCourseModal, setShowAddCourseModal] = useState<boolean>(false);
   const [showAddVideoModal, setShowAddVideoModal] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [deletingVideoId, setDeletingVideoId] = useState<number | null>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
 
   // User Management State
@@ -169,6 +172,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (created) {
         onAddCourse(created);
         setActionMessage(`Course "${title}" created successfully!`);
+        if (onRefreshCourses) {
+          onRefreshCourses();
+        }
       }
 
       setShowAddCourseModal(false);
@@ -193,8 +199,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       await deleteCourse(courseId);
       onDeleteCourse(courseId);
       setActionMessage("Course deleted successfully.");
+      if (onRefreshCourses) {
+        onRefreshCourses();
+      }
     } catch (err) {
       console.error(`Failed to delete course ${courseId}:`, err);
+    }
+  };
+
+  const handleDeleteVideo = async (courseId: number, videoId: number, videoTitle: string) => {
+    if (!confirm(`Are you sure you want to delete the video lesson "${videoTitle}"?`)) {
+      return;
+    }
+
+    setDeletingVideoId(videoId);
+    setActionMessage('');
+
+    try {
+      await deleteVideoFromCourse(courseId, videoId);
+      setActionMessage(`Video lesson "${videoTitle}" deleted successfully!`);
+      if (onRefreshCourses) {
+        onRefreshCourses();
+      }
+    } catch (err: any) {
+      console.error(`Failed to delete video ${videoId}:`, err);
+      const errMsg = err?.response?.data?.message || err?.message || "Failed to delete video. Please check backend connection.";
+      setActionMessage(errMsg);
+    } finally {
+      setDeletingVideoId(null);
     }
   };
 
@@ -220,6 +252,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setVideoTitle('');
       setVideoUrl('');
       setVideoDescription('');
+      if (onRefreshCourses) {
+        onRefreshCourses();
+      }
     } catch (err: any) {
       console.error("Failed to add video URL to course:", err);
       setActionMessage(err?.response?.data?.message || "Failed to attach video URL. Check backend server.");
@@ -242,7 +277,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             Platform Analytics & System Control
           </h1>
           <p className="text-xs md:text-sm text-[#5a5955] font-medium">
-            Manage active courses, upload Cloudinary course pictures, attach video URLs, and monitor user access.
+            Manage active courses, upload Cloudinary course pictures, manage and delete video lessons, and monitor user access.
           </p>
         </div>
 
@@ -268,7 +303,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {actionMessage && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 flex items-center justify-between">
           <span>{actionMessage}</span>
-          <button onClick={() => setActionMessage('')} className="text-emerald-900 font-extrabold">✕</button>
+          <button onClick={() => setActionMessage('')} className="text-emerald-900 font-extrabold cursor-pointer">✕</button>
         </div>
       )}
 
@@ -387,6 +422,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <td className="p-4 font-mono">{c.videos ? c.videos.length : 0} videos</td>
                     <td className="p-4 text-right space-x-2">
                       <button
+                        onClick={() => {
+                          setSelectedCourseId(c.id);
+                          setShowAddVideoModal(true);
+                        }}
+                        className="p-2 rounded-lg bg-[#ebe9e4] hover:bg-[#f85e00] hover:text-white text-[#121212] transition-colors cursor-pointer inline-flex items-center gap-1 font-bold text-xs"
+                        title="Add Video Lesson"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Video</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedCourseId(c.id);
+                          setActiveAdminTab('videos');
+                        }}
+                        className="p-2 rounded-lg bg-[#ebe9e4] hover:bg-[#121212] hover:text-white text-[#121212] transition-colors cursor-pointer inline-flex items-center gap-1 font-bold text-xs"
+                        title="Manage Course Videos"
+                      >
+                        <Video className="w-3.5 h-3.5 text-[#f85e00]" />
+                        <span>Videos ({c.videos ? c.videos.length : 0})</span>
+                      </button>
+                      <button
                         onClick={() => handleDeleteCourse(c.id)}
                         className="p-2 rounded-lg bg-rose-100 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors cursor-pointer"
                         title="Delete Course"
@@ -412,7 +469,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <button
               onClick={fetchUsers}
-              className="px-3 py-1.5 rounded-lg bg-[#121212] text-white text-xs font-bold"
+              className="px-3 py-1.5 rounded-lg bg-[#121212] text-white text-xs font-bold cursor-pointer"
             >
               {isLoadingUsers ? 'Loading...' : 'Refresh Users'}
             </button>
@@ -492,7 +549,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex items-center justify-between border-b border-[#d4d1c8] pb-4">
             <div>
               <h3 className="text-xl font-extrabold text-[#121212]">Video Lesson URL Management Center</h3>
-              <p className="text-xs text-[#5a5955]">Attach external MP4, Google Storage, or YouTube video URLs directly to course modules.</p>
+              <p className="text-xs text-[#5a5955]">Attach, review, and delete video lesson URLs from course modules.</p>
             </div>
             <button
               onClick={() => setShowAddVideoModal(true)}
@@ -505,31 +562,68 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="space-y-6">
             {courses.map((c) => (
               <div key={c.id} className="p-5 rounded-2xl bg-[#ebe9e4] border border-[#d4d1c8] space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#d4d1c8] pb-3">
                   <div className="flex items-center gap-3">
-                    <img src={c.thumbnail} alt="" className="w-10 h-10 rounded-lg object-cover border border-[#121212]" />
+                    <img src={c.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'} alt="" className="w-10 h-10 rounded-lg object-cover border border-[#121212]" />
                     <div>
                       <h4 className="font-extrabold text-sm text-[#121212]">{c.title}</h4>
                       <p className="text-xs text-[#5a5955]">{c.videos ? c.videos.length : 0} Video Lessons Attached</p>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => {
+                      setSelectedCourseId(c.id);
+                      setShowAddVideoModal(true);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#f85e00] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Lesson
+                  </button>
                 </div>
 
                 {c.videos && c.videos.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                     {c.videos.map((v) => (
-                      <div key={v.id} className="p-3 rounded-xl bg-[#f5f4f0] border border-[#d4d1c8] text-xs font-medium space-y-1">
-                        <div className="flex items-center justify-between font-bold text-[#121212]">
-                          <span className="flex items-center gap-1.5">
-                            <PlayCircle className="w-3.5 h-3.5 text-[#f85e00]" /> {v.title}
+                      <div key={v.id} className="p-3.5 rounded-xl bg-[#f5f4f0] border border-[#d4d1c8] text-xs font-medium space-y-2 hover:border-[#f85e00]/40 transition-all shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="font-bold text-[#121212] flex items-center gap-2 min-w-0">
+                            <PlayCircle className="w-4 h-4 text-[#f85e00] flex-shrink-0" />
+                            <span className="truncate">{v.title}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteVideo(c.id, v.id, v.title)}
+                            disabled={deletingVideoId === v.id}
+                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 transition-colors cursor-pointer flex-shrink-0 disabled:opacity-50"
+                            title="Delete video lesson"
+                          >
+                            {deletingVideoId === v.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <p className="text-emerald-700 truncate max-w-[200px]" title={v.url}>
+                            {v.url}
+                          </p>
+                          <span className="text-[#5a5955] text-[10px] bg-[#ebe9e4] px-1.5 py-0.5 rounded border border-[#d4d1c8]">
+                            ID #{v.id}
                           </span>
                         </div>
-                        <p className="text-[11px] font-mono text-emerald-700 truncate">{v.url}</p>
+
+                        {v.description && (
+                          <p className="text-[11px] text-[#5a5955] line-clamp-1 italic">
+                            {v.description}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-[#5a5955] italic">No video lessons uploaded for this course yet.</p>
+                  <p className="text-xs text-[#5a5955] italic py-2">No video lessons uploaded for this course yet.</p>
                 )}
               </div>
             ))}
