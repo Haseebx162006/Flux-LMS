@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ActiveTab } from '../types';
 import { AuthUser } from './AuthModal';
-import { Sparkles, BookOpen, LayoutDashboard, ShieldCheck, ArrowUpRight, LogOut } from 'lucide-react';
+import { Home as HomeIcon, BookOpen, LayoutDashboard, ShieldCheck, ArrowUpRight, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -56,8 +56,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-[#f85e00]" />
-            Explore
+            <HomeIcon className="w-4 h-4 text-[#f85e00]" />
+            Home
           </button>
 
           <button
