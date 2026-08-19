@@ -4,6 +4,7 @@ const deleteCourseService = require('../services/Admin/deleteCourse');
 const updateCourseService = require('../services/Admin/updateCourse');
 const addVideoService = require('../services/Admin/addvideo');
 const deleteVideoService = require('../services/Admin/deleteVideo');
+const uploadService = require('../services/Admin/uploadService');
 
 const handleControllerError = (res, error, context) => {
     console.error(`Error in ${context}:`, error);
@@ -70,17 +71,34 @@ exports.getVdoCipherOtp = async (req, res) => {
     }
 };
 
+// POST /api/courses/upload-image (Admin)
+exports.uploadImage = async (req, res) => {
+    try {
+        const { image } = req.body;
+        if (!image) {
+            return res.status(400).json({ message: "Image payload is required" });
+        }
+        const result = await uploadService.uploadImage(image);
+        return res.status(200).json(result);
+    } catch (error) {
+        return handleControllerError(res, error, "uploadImage controller");
+    }
+};
+
 // POST /api/courses (Admin)
 exports.createCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
-        const { title, description, price, course_title, course_description } = req.body;
+        const { title, description, price, category, level, thumbnail, course_title, course_description } = req.body;
         
         const result = await addCourseService.addCourse({
             user_id,
             course_title: course_title || title,
             course_description: course_description || description || '',
-            price: price !== undefined ? price : 0
+            price: price !== undefined ? price : 0,
+            category: category || 'Web Development',
+            level: level || 'Intermediate',
+            thumbnail: thumbnail || null
         });
 
         return res.status(201).json(result);
@@ -93,13 +111,16 @@ exports.createCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
     try {
         const courseId = Number(req.params.id);
-        const { title, description, price, course_title, course_description } = req.body;
+        const { title, description, price, category, level, thumbnail, course_title, course_description } = req.body;
         
         const result = await updateCourseService.updateCourse({
             courseId,
             course_title: course_title || title,
             course_description: course_description || description || '',
-            price: price !== undefined ? price : 0
+            price: price !== undefined ? price : 0,
+            category: category || 'Web Development',
+            level: level || 'Intermediate',
+            thumbnail: thumbnail || null
         });
 
         return res.status(200).json(result);
@@ -151,12 +172,12 @@ exports.deleteVideo = async (req, res) => {
     try {
         const courseId = Number(req.params.courseId);
         const videoId = Number(req.params.videoId);
-        const userid = req.user.id;
+        const user_id = req.user.id;
 
-        const result = await deleteVideoService.deletevideo({
-            userid,
-            courseId,
-            videoId
+        const result = await deleteVideoService.deleteVideo({
+            videoId,
+            user_id,
+            course_id: courseId
         });
 
         return res.status(200).json(result);

@@ -52,7 +52,7 @@ exports.getAllCourses = async () => {
                 userName: r.user?.name || 'Anonymous',
                 createdAt: new Date().toISOString()
             })),
-            thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+            thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
             certificateProvided: true
         }));
 

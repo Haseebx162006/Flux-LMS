@@ -1,11 +1,14 @@
 const prisma = require('../../config/prisma');
 
 exports.addCourse = async (data) => {
-    const { user_id, course_title, course_description, price } = data;
+    const { user_id, course_title, course_description, price, category, level, thumbnail } = data;
 
     const cleanTitle = String(course_title || '').trim();
     const cleanDescription = String(course_description || cleanTitle || 'Course overview').trim();
     const parsedPrice = (price !== undefined && price !== null && !isNaN(Number(price))) ? Number(price) : 0;
+    const cleanCategory = String(category || 'Web Development').trim();
+    const cleanLevel = String(level || 'Intermediate').trim();
+    const cleanThumbnail = thumbnail ? String(thumbnail).trim() : null;
 
     if (!user_id || !cleanTitle) {
         throw new Error("User ID and Course Title are required");
@@ -24,7 +27,10 @@ exports.addCourse = async (data) => {
                 where: { id: existingCourse.id },
                 data: {
                     description: cleanDescription,
-                    price: parsedPrice
+                    price: parsedPrice,
+                    category: cleanCategory,
+                    level: cleanLevel,
+                    ...(cleanThumbnail ? { thumbnail: cleanThumbnail } : {})
                 }
             });
             return { message: "Course updated successfully", course: updatedCourse };
@@ -35,6 +41,9 @@ exports.addCourse = async (data) => {
                 title: cleanTitle,
                 description: cleanDescription,
                 price: parsedPrice,
+                category: cleanCategory,
+                level: cleanLevel,
+                thumbnail: cleanThumbnail,
                 userId: Number(user_id)
             }
         });

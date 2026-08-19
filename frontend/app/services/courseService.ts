@@ -8,6 +8,7 @@ export interface CreateCoursePayload {
   price: number;
   category?: string;
   level?: 'Beginner' | 'Intermediate' | 'Advanced';
+  thumbnail?: string;
 }
 
 export interface AddVideoPayload {
@@ -15,6 +16,21 @@ export interface AddVideoPayload {
   url: string;
   description?: string;
 }
+
+/**
+ * Upload a course picture/thumbnail to Cloudinary via backend API
+ */
+export const uploadCourseImage = async (base64OrFileUrl: string): Promise<string> => {
+  try {
+    const response = await api.post<{ url: string }>('/courses/upload-image', {
+      image: base64OrFileUrl
+    });
+    return response.data.url;
+  } catch (error) {
+    console.error("Failed to upload course image to Cloudinary:", error);
+    throw error;
+  }
+};
 
 /**
  * Fetch all published courses directly from PostgreSQL database via API
