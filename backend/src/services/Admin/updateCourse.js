@@ -1,4 +1,4 @@
-const prisma = require('../config/prisma');
+const prisma = require('../../config/prisma');
 
 exports.updateCourse = async (data) => {
     const { courseId, course_title, course_description, price } = data;

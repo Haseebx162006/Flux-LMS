@@ -1,4 +1,4 @@
-const prisma = require('../config/prisma');
+const prisma = require('../../config/prisma');
 exports.deletevideo = async (data) => {
     const {userid, videoId, courseId } = data;
     if (!courseId) {

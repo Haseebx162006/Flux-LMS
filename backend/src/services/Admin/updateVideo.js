@@ -1,4 +1,4 @@
-const prisma = require('../config/prisma');
+const prisma = require('../../config/prisma');
 
 exports.updateVideo = async (data) => {
     const { videoId, video_title, video_description ,courseId  } = data;

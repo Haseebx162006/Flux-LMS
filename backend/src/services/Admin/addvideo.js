@@ -1,31 +1,56 @@
-const prisma = require('../config/prisma');
-exports.upload_video = async (data) => {
-    const { user_id, video_url, course_id , video_title, video_description } = data;
+const prisma = require('../../config/prisma');
 
-    if(!user_id || !video_url || !course_id || !video_title || !video_description){
-        throw new Error("All fields are required");
+exports.upload_video = async (data) => {
+    const { user_id, video_url, course_id, video_title, video_description } = data;
+
+    if (!user_id || !video_url || !course_id || !video_title) {
+        throw new Error("User ID, Course ID, Video Title, and Video URL are required");
     }
 
+    const cleanTitle = String(video_title).trim();
+    const cleanUrl = String(video_url).trim();
+    const cleanDescription = video_description ? String(video_description).trim() : `Lesson: ${cleanTitle}`;
+    const targetCourseId = Number(course_id);
+
     try {
-        const video = await prisma.video.findFirst({
+        const course = await prisma.course.findUnique({
+            where: { id: targetCourseId }
+        });
+
+        if (!course) {
+            throw new Error(`Course with ID ${targetCourseId} not found`);
+        }
+
+        const existingVideo = await prisma.video.findFirst({
             where: {
-                courseId: course_id,
-                title: video_title
+                courseId: targetCourseId,
+                title: cleanTitle
             }
         });
 
-        if (video) {
-            throw new Error("Video with this title already exists for this course");
+        if (existingVideo) {
+            // Update existing video URL & description
+            const updated = await prisma.video.update({
+                where: { id: existingVideo.id },
+                data: {
+                    url: cleanUrl,
+                    description: cleanDescription
+                }
+            });
+            return { message: "Video lesson updated successfully", video: updated };
         }
-        const video = await prisma.video.create({
+
+        const createdVideo = await prisma.video.create({
             data: {
-                title: video_title,
-                url: video_url,
-                description: video_description,
-                courseId: course_id
+                title: cleanTitle,
+                url: cleanUrl,
+                description: cleanDescription,
+                courseId: targetCourseId
             }
-        });;
+        });
+        return { message: "Video uploaded successfully", video: createdVideo };
     } catch (error) {
-        throw new Error(error.message);
+        console.error("Error in upload_video service:", error);
+        throw new Error(error.message || "Failed to attach video to course");
     }
-}
+};

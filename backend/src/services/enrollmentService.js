@@ -22,7 +22,8 @@ exports.getUserEnrollments = async (data) => {
 
         return { enrollments };
     } catch (error) {
-        throw new Error(error.message);
+        console.error("Database error in getUserEnrollments:", error);
+        throw new Error(error.message || "Failed to fetch user enrollments from database");
     }
 };
 
@@ -45,6 +46,7 @@ exports.checkEnrollmentStatus = async (data) => {
 
         return { isEnrolled: Boolean(enrollment) };
     } catch (error) {
-        throw new Error(error.message);
+        console.error("Database error in checkEnrollmentStatus:", error);
+        throw new Error(error.message || "Failed to check enrollment status in database");
     }
 };

@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,87 +6,66 @@ datasource db {
   provider = "postgresql"
 }
 
-
-enum Role{
+enum Role {
   STUDENT
   ADMIN
 }
 
 model user {
-  id       Int      @id @default(autoincrement())
-  name     String
-  email    String   @unique
-  password String
-  isVerified                Boolean                    @default(false)
-  isBlocked                 Boolean                    @default(false)
-  otp                       String?
-  otpExpiry                 DateTime?
-  passwordResetOtp          String?
-  passwordResetOtpExpiry    DateTime?
-  createdAt                 DateTime                   @default(now())
-  updatedAt                 DateTime                   @updatedAt
-  role                      Role                       @default(STUDENT)
+  id                     Int          @id @default(autoincrement())
+  name                   String
+  email                  String       @unique
+  password               String
+  isVerified             Boolean      @default(false)
+  isBlocked              Boolean      @default(false)
+  otp                    String?
+  otpExpiry              DateTime?
+  passwordResetOtp       String?
+  passwordResetOtpExpiry DateTime?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  role                   Role         @default(STUDENT)
 
-  courses course[]
-  reviews Review[]
-
-  payments Payment[]
-
-  enrollments Enrollment[]
+  courses                course[]
+  reviews                Review[]
+  payments               Payment[]
+  enrollments            Enrollment[]
 }
 
 model course {
-  id       Int     @id @default(autoincrement())
-  title    String
-  userId   Int
+  id          Int          @id @default(autoincrement())
+  title       String
+  userId      Int
   description String?
-  price  Float
+  price       Float
+  category    String       @default("Web Development")
+  level       String       @default("Intermediate")
 
-  user     user    @relation(fields: [userId], references: [id])
-  videos   Video[]
-  reviews Review[]
-  payments Payment[]
-
-
+  user        user         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos      Video[]
+  reviews     Review[]
+  payments    Payment[]
   enrollments Enrollment[]
 }
 
 model Video {
-  id       Int     @id @default(autoincrement())
-  title    String
-  url      String
+  id          Int     @id @default(autoincrement())
+  title       String
+  url         String
   description String?
 
-
-  courseId Int
-  course   course  @relation(fields: [courseId], references: [id])
+  courseId    Int
+  course      course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
-
-model Review{
+model Review {
   id       Int     @id @default(autoincrement())
   rating   Int
   comment  String?
   userId   Int
   courseId Int
-  user     user    @relation(fields: [userId], references: [id])
-  course   course  @relation(fields: [courseId], references: [id])
-}
-
-model Payment {
-  id            Int      @id @default(autoincrement())
-
-  userId        Int
-  courseId      Int
-
-  amount        Float
-  status        PaymentStatus
-  transactionId String?  @unique
-
-  user          user     @relation(fields: [userId], references: [id])
-  course        course   @relation(fields: [courseId], references: [id])
-
-  createdAt     DateTime @default(now())
+  user     user    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 enum PaymentStatus {
@@ -101,6 +75,21 @@ enum PaymentStatus {
   REFUNDED
 }
 
+model Payment {
+  id            Int           @id @default(autoincrement())
+
+  userId        Int
+  courseId      Int
+
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  transactionId String?       @unique
+
+  user          user          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course        course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now())
+}
 
 model Enrollment {
   id        Int      @id @default(autoincrement())
@@ -108,8 +97,8 @@ model Enrollment {
   userId    Int
   courseId  Int
 
-  user      user     @relation(fields: [userId], references: [id])
-  course    course   @relation(fields: [courseId], references: [id])
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 

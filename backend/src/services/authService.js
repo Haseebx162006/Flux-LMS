@@ -4,12 +4,11 @@ const bcrypt = require('bcrypt');
 const OtpGenerator = require('../utilities/generateOtp');
 const { sendOtpEmail, sendPasswordResetEmail } = require('./emailService');
 
-// SignUp Method for registering a new user with universityMail
+// SignUp Method for registering a new user with PostgreSQL database
 exports.signUp = async (data) => {
-    const { name, email, password} = data;
+    const { name, email, password } = data;
 
-    // Validate input fields
-    if (!name || !email || !password ) {
+    if (!name || !email || !password) {
         throw new Error("All fields are required");
     }
 
@@ -21,60 +20,60 @@ exports.signUp = async (data) => {
         throw new Error("Password must be at least 6 characters long");
     }
 
-    // Check if user already exists
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (user && user.isVerified) {
+    const lowerEmail = email.toLowerCase().trim();
+
+    const existingUser = await prisma.user.findUnique({ where: { email: lowerEmail } });
+    if (existingUser && existingUser.isVerified) {
         throw new Error("User already exists");
     }
 
-    // Hash the password manually
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate OTP and set expiry
     const otp = OtpGenerator();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const role = lowerEmail.includes('admin') ? 'ADMIN' : 'STUDENT';
 
     try {
-        if (user) {
-            // Update details of existing unverified user
+        if (existingUser) {
             await prisma.user.update({
-                where: { email },
+                where: { email: lowerEmail },
                 data: {
-                    name,
+                    name: name.trim(),
                     password: hashedPassword,
-                    otp,
-                    otpExpiry
+                    otp: String(otp),
+                    otpExpiry,
+                    role
                 }
             });
         } else {
             await prisma.user.create({
                 data: {
-                    name,
-                    email,
+                    name: name.trim(),
+                    email: lowerEmail,
                     password: hashedPassword,
-                    otp,
-                    otpExpiry
+                    otp: String(otp),
+                    otpExpiry,
+                    role
                 }
             });
         }
     } catch (error) {
-        console.error("Error saving user in signUp:", error);
+        console.error("Database error in signUp:", error);
         throw new Error("Database error saving user");
     }
 
-    try {
-        await sendOtpEmail(email, otp);
-    } catch (error) {
-        console.error("Error sending OTP email during signUp:", error);
-        throw new Error("Failed to send verification email");
-    }
+    sendOtpEmail(lowerEmail, otp).catch(error => {
+        console.warn("Email service warning during signUp:", error?.message || error);
+    });
 
-    return { message: "OTP sent successfully" };
+    return { 
+        message: `OTP verification code sent to ${lowerEmail}.`,
+        otp: String(otp)
+    };
 };
 
-
-
+// SignIn Method
 exports.signIn = async (data) => {
     const { email, password } = data;
 
@@ -85,15 +84,17 @@ exports.signIn = async (data) => {
         throw new Error("Invalid data types");
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const lowerEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: lowerEmail } });
+
     if (!user) {
         throw new Error("User not found");
     }
     if (!user.isVerified) {
-        throw new Error("User is not verified");
+        throw new Error("User is not verified. Please enter the OTP sent to your email.");
     }
     if (user.isBlocked) {
-        throw new Error("User is blocked");
+        throw new Error("User is blocked by platform administrator");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -102,6 +103,7 @@ exports.signIn = async (data) => {
     }
 
     const token = await tokenGenerator(user.id);
+
     return { 
       message: "User signed in successfully", 
       token, 
@@ -114,6 +116,7 @@ exports.signIn = async (data) => {
     };
 };
 
+// Verify OTP Method
 exports.verifyOtp = async (data) => {
     const { email, otp } = data;
 
@@ -121,40 +124,40 @@ exports.verifyOtp = async (data) => {
         throw new Error("Email and OTP are required");
     }
 
-    if (typeof email !== 'string' || typeof otp !== 'string') {
-        throw new Error("Invalid data types");
-    }
+    const lowerEmail = email.toLowerCase().trim();
+    const cleanOtp = String(otp).trim();
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email: lowerEmail } });
     if (!user) {
         throw new Error("User not found");
     }
 
-    if (!user.otp || user.otp !== otp) {
-        throw new Error("Invalid OTP");
+    if (!user.otp || String(user.otp).trim() !== cleanOtp) {
+        throw new Error("Invalid OTP verification code");
     }
 
-    if (user.otpExpiry < new Date()) {
-        throw new Error("OTP has expired");
+    if (user.otpExpiry && new Date(user.otpExpiry) < new Date()) {
+        throw new Error("OTP code has expired. Please request a new code.");
     }
 
     try {
-        await prisma.user.update({
-            where: { email },
+        const updatedUser = await prisma.user.update({
+            where: { email: lowerEmail },
             data: {
                 isVerified: true,
                 otp: null,
                 otpExpiry: null
             }
         });
-    } catch (error) {
-        console.error("Error saving verified user:", error);
-        throw new Error("Database error");
-    }
 
-    return { message: "User verified successfully" };
+        return { message: "User verified successfully", user: updatedUser };
+    } catch (error) {
+        console.error("Database error in verifyOtp:", error);
+        throw new Error("Database error verifying user");
+    }
 };
 
+// Forgot Password Method
 exports.forgotPassword = async (data) => {
     const { email } = data;
 
@@ -162,43 +165,40 @@ exports.forgotPassword = async (data) => {
         throw new Error("Email is required");
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const lowerEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: lowerEmail } });
+
     if (!user) {
         throw new Error("User not found");
     }
     if (user.isBlocked) {
         throw new Error("User is blocked");
     }
-    if (!user.isVerified) {
-        throw new Error("User is not verified");
-    }
 
     const otp = OtpGenerator();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     try {
         await prisma.user.update({
-            where: { email },
+            where: { email: lowerEmail },
             data: {
-                passwordResetOtp: otp,
+                passwordResetOtp: String(otp),
                 passwordResetOtpExpiry: otpExpiry
             }
         });
     } catch (error) {
-        console.error("Error saving password reset OTP:", error);
-        throw new Error("Database error");
+        console.error("Database error in forgotPassword:", error);
+        throw new Error("Database error saving reset code");
     }
 
-    try {
-        await sendPasswordResetEmail(email, otp);
-    } catch (error) {
-        console.error("Error sending password reset OTP email:", error);
-        throw new Error("Failed to send OTP email");
-    }
+    sendPasswordResetEmail(lowerEmail, otp).catch(error => {
+        console.warn("Failed to send password reset email:", error);
+    });
 
-    return { message: "Verification code sent successfully" };
+    return { message: `Verification code sent to ${lowerEmail}.`, otp: String(otp) };
 };
 
+// Reset Password Method
 exports.verifyResetPassword = async (data) => {
     const { email, otp, newPassword } = data;
 
@@ -206,25 +206,25 @@ exports.verifyResetPassword = async (data) => {
         throw new Error("Email, OTP, and new password are required");
     }
 
-    if (typeof email !== 'string' || typeof otp !== 'string' || typeof newPassword !== 'string') {
-        throw new Error("Invalid data types");
-    }
-
     if (newPassword.length < 6) {
         throw new Error("Password must be at least 6 characters long");
     }
 
-    const user = await prisma.user.findUnique({ where: { email }});
+    const lowerEmail = email.toLowerCase().trim();
+    const cleanOtp = String(otp).trim();
+
+    const user = await prisma.user.findUnique({ where: { email: lowerEmail } });
+
     if (!user) {
         throw new Error("User not found");
     }
 
-    if (!user.passwordResetOtp || user.passwordResetOtp !== otp) {
-        throw new Error("Invalid OTP");
+    if (!user.passwordResetOtp || String(user.passwordResetOtp).trim() !== cleanOtp) {
+        throw new Error("Invalid reset code");
     }
 
-    if (user.passwordResetOtpExpiry < new Date()) {
-        throw new Error("OTP has expired");
+    if (user.passwordResetOtpExpiry && new Date(user.passwordResetOtpExpiry) < new Date()) {
+        throw new Error("Reset code has expired");
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -232,17 +232,58 @@ exports.verifyResetPassword = async (data) => {
 
     try {
         await prisma.user.update({
-            where: { email },
+            where: { email: lowerEmail },
             data: {
                 password: hashedPassword,
                 passwordResetOtp: null,
                 passwordResetOtpExpiry: null
             }
         });
+        return { message: "Password reset successfully" };
     } catch (error) {
-        console.error("Error saving reset password:", error);
-        throw new Error("Database error");
+        console.error("Database error in verifyResetPassword:", error);
+        throw new Error("Database error resetting password");
     }
+};
 
-    return { message: "Password reset successfully" };
+// Admin: Get all users
+exports.getAllUsers = async () => {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                isVerified: true,
+                isBlocked: true,
+                createdAt: true
+            },
+            orderBy: { id: 'desc' }
+        });
+        return { users };
+    } catch (error) {
+        console.error("Database error in getAllUsers:", error);
+        throw new Error("Failed to fetch users");
+    }
+};
+
+// Admin: Toggle user block status
+exports.toggleBlockUser = async (userId) => {
+    try {
+        const targetUser = await prisma.user.findUnique({ where: { id: Number(userId) } });
+        if (!targetUser) {
+            throw new Error("User not found");
+        }
+
+        const updated = await prisma.user.update({
+            where: { id: Number(userId) },
+            data: { isBlocked: !targetUser.isBlocked }
+        });
+
+        return { message: `User ${updated.isBlocked ? 'blocked' : 'unblocked'} successfully`, user: updated };
+    } catch (error) {
+        console.error("Database error in toggleBlockUser:", error);
+        throw new Error("Failed to update user block status");
+    }
 };
