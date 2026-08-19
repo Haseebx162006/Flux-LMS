@@ -35,15 +35,17 @@ function HomeContent() {
   const [selectedCourseDetails, setSelectedCourseDetails] = useState<Course | null>(null);
   const [checkoutCourse, setCheckoutCourse] = useState<Course | null>(null);
 
-  // Restore stored session user and fetch live courses/enrollments from API on mount
+  // Restore stored session user and fetch live catalog on mount (preserve landing page by default)
   useEffect(() => {
     const savedUser = getStoredUser();
     if (savedUser) {
       setUser(savedUser);
-      if (savedUser.role === 'ADMIN') {
-        setActiveTab('admin');
-      } else if (requestedTab === 'dashboard') {
+      if (requestedTab === 'dashboard' && savedUser.role !== 'ADMIN') {
         setActiveTab('dashboard');
+      } else if (requestedTab === 'admin' && savedUser.role === 'ADMIN') {
+        setActiveTab('admin');
+      } else if (requestedTab === 'courses') {
+        setActiveTab('courses');
       }
     }
 
