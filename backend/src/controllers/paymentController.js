@@ -18,8 +18,22 @@ const handleControllerError = (res, error, context) => {
 exports.createCheckoutSession = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { courseId } = req.body;
-        const result = await paymentService.createCheckoutSession({ userId, courseId });
+        const { courseId, frontendUrl: clientFrontendUrl } = req.body;
+
+        let origin = clientFrontendUrl || req.get('origin');
+        if (!origin && req.get('referer')) {
+            try {
+                origin = new URL(req.get('referer')).origin;
+            } catch {
+                origin = null;
+            }
+        }
+
+        const result = await paymentService.createCheckoutSession({ 
+            userId, 
+            courseId,
+            frontendUrl: origin
+        });
         return res.status(201).json(result);
     } catch (error) {
         return handleControllerError(res, error, "createCheckoutSession controller");

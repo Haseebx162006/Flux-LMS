@@ -39,7 +39,8 @@ exports.createCheckoutSession = async (data) => {
             }
         });
 
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const baseFrontendUrl = data.frontendUrl || process.env.FRONTEND_URL || 'http://localhost:3000';
+        const frontendUrl = baseFrontendUrl.replace(/\/+$/, '');
         let sessionUrl = `${frontendUrl}/payment-success?payment_id=${payment.id}`;
         let sessionId = `session_${Date.now()}`;
 

@@ -10,9 +10,13 @@ export interface CheckoutSessionResponse {
 /**
  * Initiate Stripe Checkout session for a course
  */
-export const createCheckoutSession = async (courseId: number): Promise<CheckoutSessionResponse> => {
+export const createCheckoutSession = async (courseId: number, customFrontendUrl?: string): Promise<CheckoutSessionResponse> => {
   try {
-    const response = await api.post<CheckoutSessionResponse>('/payments/checkout-session', { courseId });
+    const frontendUrl = customFrontendUrl || (typeof window !== 'undefined' ? window.location.origin : undefined);
+    const response = await api.post<CheckoutSessionResponse>('/payments/checkout-session', { 
+      courseId,
+      frontendUrl
+    });
     return response.data;
   } catch (error) {
     console.error("Failed to create checkout session via API:", error);
