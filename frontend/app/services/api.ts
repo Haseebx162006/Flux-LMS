@@ -41,7 +41,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.warn("Unauthorized API call:", error.config?.url);
+      console.warn("Unauthorized API call (token expired/invalid):", error.config?.url);
+      if (typeof window !== 'undefined') {
+        // Purge expired token on 401 to prompt fresh authentication
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     return Promise.reject(error);
   }
