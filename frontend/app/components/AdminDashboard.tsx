@@ -89,7 +89,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const created = await createCourse({
         title,
         subtitle,
-        description,
+        description: description || subtitle || title,
         price: parseFloat(price),
         category,
         level
@@ -98,15 +98,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         onAddCourse(created);
         setActionMessage(`Course "${title}" created successfully!`);
       }
-    } catch (err) {
-      console.error("Course creation failed:", err);
-      setActionMessage("Failed to create course. Please check backend connection.");
-    } finally {
-      setIsSubmitting(false);
       setShowAddCourseModal(false);
       setTitle('');
       setSubtitle('');
       setDescription('');
+    } catch (err: any) {
+      console.error("Course creation failed:", err);
+      const errMsg = err?.response?.data?.message || err?.message || "Failed to create course. Please check backend connection.";
+      setActionMessage(errMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

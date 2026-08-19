@@ -3,33 +3,45 @@ const prisma = require('../../config/prisma');
 exports.addCourse = async (data) => {
     const { user_id, course_title, course_description, price } = data;
 
-    if (!user_id || !course_title || !course_description || price === undefined || price === null) {
-        throw new Error("All fields are required");
+    const cleanTitle = String(course_title || '').trim();
+    const cleanDescription = String(course_description || cleanTitle || 'Course overview').trim();
+    const parsedPrice = (price !== undefined && price !== null && !isNaN(Number(price))) ? Number(price) : 0;
+
+    if (!user_id || !cleanTitle) {
+        throw new Error("User ID and Course Title are required");
     }
 
     try {
         const existingCourse = await prisma.course.findFirst({
             where: {
-                userId: user_id,
-                title: course_title
+                title: cleanTitle
             }
         });
 
         if (existingCourse) {
-            throw new Error("Course with this title already exists");
+            // Update existing course details
+            const updatedCourse = await prisma.course.update({
+                where: { id: existingCourse.id },
+                data: {
+                    description: cleanDescription,
+                    price: parsedPrice
+                }
+            });
+            return { message: "Course updated successfully", course: updatedCourse };
         }
 
         const course = await prisma.course.create({
             data: {
-                title: course_title,
-                description: course_description,
-                price: parseFloat(price),
-                userId: user_id
+                title: cleanTitle,
+                description: cleanDescription,
+                price: parsedPrice,
+                userId: Number(user_id)
             }
         });
 
         return { message: "Course added successfully", course };
     } catch (error) {
-        throw new Error(error.message);
+        console.error("Error in addCourse service:", error);
+        throw new Error(error.message || "Failed to create course");
     }
 };
