@@ -116,17 +116,20 @@ exports.verifyPayment = async (data) => {
         }
 
         // 1. Update Payment Status to PAID
-        const updatedPayment = await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-                status: 'PAID',
-                transactionId: String(sessionId || `tx_${Date.now()}`)
-            }
-        });
+        let updatedPayment = payment;
+        if (payment.status !== 'PAID') {
+            updatedPayment = await prisma.payment.update({
+                where: { id: payment.id },
+                data: {
+                    status: 'PAID',
+                    transactionId: String(sessionId || payment.transactionId || `tx_${Date.now()}`)
+                }
+            });
+        }
 
         // 2. Ensure Student Enrollment Record is Created in Database
-        const userId = payment.userId;
-        const courseId = payment.courseId;
+        const userId = Number(payment.userId);
+        const courseId = Number(payment.courseId);
 
         const existingEnrollment = await prisma.enrollment.findUnique({
             where: {
@@ -142,9 +145,7 @@ exports.verifyPayment = async (data) => {
             enrollment = await prisma.enrollment.create({
                 data: {
                     userId,
-                    courseId,
-                    progressPercentage: 0,
-                    completedVideoIds: []
+                    courseId
                 }
             });
         }

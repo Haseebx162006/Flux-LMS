@@ -8,8 +8,38 @@ exports.getUserEnrollments = async (data) => {
     }
 
     try {
+        const cleanUserId = Number(userId);
+
+        // Auto-heal / sync any paid courses where enrollment record might be missing
+        const paidPayments = await prisma.payment.findMany({
+            where: {
+                userId: cleanUserId,
+                status: 'PAID'
+            }
+        });
+
+        for (const payment of paidPayments) {
+            try {
+                await prisma.enrollment.upsert({
+                    where: {
+                        userId_courseId: {
+                            userId: cleanUserId,
+                            courseId: payment.courseId
+                        }
+                    },
+                    update: {},
+                    create: {
+                        userId: cleanUserId,
+                        courseId: payment.courseId
+                    }
+                });
+            } catch (syncErr) {
+                console.warn("Enrollment sync notice:", syncErr.message);
+            }
+        }
+
         const enrollments = await prisma.enrollment.findMany({
-            where: { userId: Number(userId) },
+            where: { userId: cleanUserId },
             include: {
                 course: {
                     include: {
@@ -35,14 +65,41 @@ exports.checkEnrollmentStatus = async (data) => {
     }
 
     try {
-        const enrollment = await prisma.enrollment.findUnique({
+        const cleanUserId = Number(userId);
+        const cleanCourseId = Number(courseId);
+
+        let enrollment = await prisma.enrollment.findUnique({
             where: {
                 userId_courseId: {
-                    userId: Number(userId),
-                    courseId: Number(courseId)
+                    userId: cleanUserId,
+                    courseId: cleanCourseId
                 }
             }
         });
+
+        // If not found in enrollment table, check if there is a verified PAID payment
+        if (!enrollment) {
+            const paidPayment = await prisma.payment.findFirst({
+                where: {
+                    userId: cleanUserId,
+                    courseId: cleanCourseId,
+                    status: 'PAID'
+                }
+            });
+
+            if (paidPayment) {
+                try {
+                    enrollment = await prisma.enrollment.create({
+                        data: {
+                            userId: cleanUserId,
+                            courseId: cleanCourseId
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Auto enrollment creation note:", e.message);
+                }
+            }
+        }
 
         return { isEnrolled: Boolean(enrollment) };
     } catch (error) {
