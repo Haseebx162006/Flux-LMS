@@ -32,7 +32,7 @@ exports.signUp = async (data) => {
 
     const otp = OtpGenerator();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    const role = lowerEmail.includes('admin') ? 'ADMIN' : 'STUDENT';
+    const role = 'STUDENT';
 
     try {
         if (existingUser) {

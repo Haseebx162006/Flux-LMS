@@ -178,36 +178,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block mb-1.5 text-xs font-bold uppercase tracking-wide">Account Role</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole('STUDENT')}
-                    className={`p-3 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      role === 'STUDENT'
-                        ? 'bg-[#121212] text-white border-[#121212] shadow-md'
-                        : 'bg-[#ebe9e4] text-[#5a5955] border-[#d4d1c8]'
-                    }`}
-                  >
-                    <BookOpen className="w-4 h-4 text-[#f85e00]" />
-                    Student Learner
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('ADMIN')}
-                    className={`p-3 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      role === 'ADMIN'
-                        ? 'bg-[#f85e00] text-white border-[#f85e00] shadow-md'
-                        : 'bg-[#ebe9e4] text-[#5a5955] border-[#d4d1c8]'
-                    }`}
-                  >
-                    <Shield className="w-4 h-4" />
-                    Platform Admin
-                  </button>
-                </div>
-              </div>
-
               <div className="pt-1">
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-[#5a5955]">
                   <input

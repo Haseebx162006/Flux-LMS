@@ -268,36 +268,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             )}
 
-            {mode === 'signup' && (
-              <div>
-                <label className="block mb-1">Account Role</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRole('STUDENT')}
-                    className={`py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-                      role === 'STUDENT'
-                        ? 'bg-[#121212] text-white border-[#121212]'
-                        : 'bg-[#ebe9e4] text-[#5a5955] border-[#d4d1c8]'
-                    }`}
-                  >
-                    Student Learner
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('ADMIN')}
-                    className={`py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-                      role === 'ADMIN'
-                        ? 'bg-[#f85e00] text-white border-[#f85e00]'
-                        : 'bg-[#ebe9e4] text-[#5a5955] border-[#d4d1c8]'
-                    }`}
-                  >
-                    Platform Admin
-                  </button>
-                </div>
-              </div>
-            )}
-
             {message && <p className="text-[11px] text-emerald-600 font-bold bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">{message}</p>}
             {error && <p className="text-[11px] text-rose-600 font-bold bg-rose-50 p-2.5 rounded-xl border border-rose-200">{error}</p>}
 
