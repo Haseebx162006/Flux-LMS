@@ -43,12 +43,29 @@ exports.getCourseById = async (req, res) => {
 // GET /api/courses/vdocipher-otp/:videoId
 exports.getVdoCipherOtp = async (req, res) => {
     try {
-        const { videoId } = req.params;
+        let { videoId } = req.params;
         const apiSecret = process.env.VDOCIPHER_API_SECRET;
 
         if (!apiSecret) {
-            return res.status(200).json({
-                message: "VDOCIPHER_API_SECRET not configured in .env",
+            return res.status(500).json({
+                message: "VDOCIPHER_API_SECRET is not configured in backend .env",
+                otp: null,
+                playbackInfo: null
+            });
+        }
+
+        // Clean & extract 32-hex ID if full URL or extra characters were passed
+        if (videoId) {
+            videoId = videoId.trim();
+            const hexMatch = videoId.match(/([a-fA-F0-9]{32})/);
+            if (hexMatch) {
+                videoId = hexMatch[1].toLowerCase();
+            }
+        }
+
+        if (!videoId || !/^[a-fA-F0-9]{32}$/.test(videoId)) {
+            return res.status(400).json({
+                message: `Invalid VdoCipher Video ID format: "${req.params.videoId}". Must contain a 32-character hexadecimal ID.`,
                 otp: null,
                 playbackInfo: null
             });
@@ -64,10 +81,24 @@ exports.getVdoCipherOtp = async (req, res) => {
         });
 
         const data = await apiResponse.json();
+
+        if (!apiResponse.ok || !data.otp) {
+            console.error(`VdoCipher API Error for videoId ${videoId}:`, data);
+            return res.status(apiResponse.status || 400).json({
+                message: data.message || data.error || "VdoCipher could not authenticate this video. Check if the video is ready in your VdoCipher dashboard.",
+                otp: null,
+                playbackInfo: null
+            });
+        }
+
         return res.status(200).json(data);
     } catch (error) {
         console.error("Error generating VdoCipher OTP:", error);
-        return res.status(500).json({ message: "Failed to obtain VdoCipher playback OTP" });
+        return res.status(500).json({ 
+            message: "Failed to obtain VdoCipher playback OTP. Check backend connection.",
+            otp: null,
+            playbackInfo: null
+        });
     }
 };
 

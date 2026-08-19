@@ -20,7 +20,8 @@ import {
   Link as LinkIcon,
   Upload,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import {
   createCourse,
@@ -30,6 +31,7 @@ import {
   uploadCourseImage
 } from '../services/courseService';
 import { getAllUsers, toggleBlockUser, ManagedUser } from '../services/authService';
+import { VdoCipherPlayer } from './VdoCipherPlayer';
 
 interface AdminDashboardProps {
   courses: Course[];
@@ -49,6 +51,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Modal triggers
   const [showAddCourseModal, setShowAddCourseModal] = useState<boolean>(false);
   const [showAddVideoModal, setShowAddVideoModal] = useState<boolean>(false);
+  const [previewVideo, setPreviewVideo] = useState<{ isOpen: boolean; url: string; title: string } | null>(null);
+  const [showModalLivePreview, setShowModalLivePreview] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [deletingVideoId, setDeletingVideoId] = useState<number | null>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
@@ -591,18 +595,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <PlayCircle className="w-4 h-4 text-[#f85e00] flex-shrink-0" />
                             <span className="truncate">{v.title}</span>
                           </div>
-                          <button
-                            onClick={() => handleDeleteVideo(c.id, v.id, v.title)}
-                            disabled={deletingVideoId === v.id}
-                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 transition-colors cursor-pointer flex-shrink-0 disabled:opacity-50"
-                            title="Delete video lesson"
-                          >
-                            {deletingVideoId === v.id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                          </button>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setPreviewVideo({ isOpen: true, url: v.url, title: `${c.title}: ${v.title}` })}
+                              className="p-1.5 rounded-lg bg-[#ebe9e4] hover:bg-[#121212] text-[#121212] hover:text-white border border-[#d4d1c8] transition-colors cursor-pointer"
+                              title="Preview Video Player"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteVideo(c.id, v.id, v.title)}
+                              disabled={deletingVideoId === v.id}
+                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 transition-colors cursor-pointer disabled:opacity-50"
+                              title="Delete video lesson"
+                            >
+                              {deletingVideoId === v.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
                         </div>
 
                         <div className="flex items-center justify-between text-[11px] font-mono">
@@ -833,7 +847,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div>
-                <label className="block mb-1">VdoCipher Video ID or Video URL (MP4 / VdoCipher / YouTube)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label>VdoCipher Video ID or Video URL</label>
+                  {videoUrl.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setShowModalLivePreview(!showModalLivePreview)}
+                      className="text-[11px] font-bold text-[#f85e00] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="w-3 h-3" />
+                      {showModalLivePreview ? 'Hide Preview' : 'Test / Preview Player'}
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   required
@@ -843,8 +869,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="w-full bg-[#ebe9e4] border border-[#d4d1c8] rounded-xl px-3 py-2.5 font-mono focus:outline-none"
                 />
                 <p className="text-[10px] text-[#5a5955] mt-1 font-normal">
-                  Paste your 32-character VdoCipher Video ID (from your VdoCipher Dashboard) or full video link.
+                  Paste your 32-character VdoCipher Video ID, dashboard link, or media URL.
                 </p>
+
+                {showModalLivePreview && videoUrl.trim() && (
+                  <div className="mt-3 rounded-2xl overflow-hidden border border-[#d4d1c8] bg-black h-52">
+                    <VdoCipherPlayer videoUrl={videoUrl} title={videoTitle || 'Live Video Test'} />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -866,6 +898,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {isSubmitting ? 'Attaching Video...' : 'Attach Video URL to Course'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PREVIEW VIDEO MODAL FOR ADMIN */}
+      {previewVideo && previewVideo.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#121212]/80 backdrop-blur-md">
+          <div className="framer-card rounded-3xl border border-[#d4d1c8] bg-[#f5f4f0] w-full max-w-3xl overflow-hidden shadow-2xl relative my-auto space-y-4 p-6">
+            <div className="flex items-center justify-between border-b border-[#d4d1c8] pb-3">
+              <div className="flex items-center gap-2">
+                <PlayCircle className="w-5 h-5 text-[#f85e00]" />
+                <h3 className="font-extrabold text-[#121212] text-base truncate max-w-md">{previewVideo.title}</h3>
+              </div>
+              <button
+                onClick={() => setPreviewVideo(null)}
+                className="w-8 h-8 rounded-full bg-[#dedcd7] hover:bg-[#121212] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-xl">
+              <VdoCipherPlayer videoUrl={previewVideo.url} title={previewVideo.title} />
+            </div>
+
+            <div className="flex items-center justify-between text-xs font-mono text-[#5a5955] pt-1">
+              <span className="truncate max-w-lg">Source: {previewVideo.url}</span>
+              <button
+                onClick={() => setPreviewVideo(null)}
+                className="px-4 py-2 rounded-xl bg-[#121212] text-white font-bold cursor-pointer hover:bg-[#f85e00] transition-colors"
+              >
+                Close Preview
+              </button>
+            </div>
           </div>
         </div>
       )}
