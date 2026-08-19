@@ -40,10 +40,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      console.warn("Unauthorized API call (token expired/invalid):", error.config?.url);
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/signin')) {
       if (typeof window !== 'undefined') {
-        // Purge expired token on 401 to prompt fresh authentication
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
