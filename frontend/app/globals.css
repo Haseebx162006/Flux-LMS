@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #ebe9e4;
+    --bg-card: #f5f4f0;
+    --bg-dark: #121212;
+    --text-primary: #121212;
+    --text-muted: #5a5955;
+    --accent-orange: #f85e00;
+    --accent-orange-hover: #e05300;
+    --border-color: #d4d1c8;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Pixel & Framer Design Utilities */
+.bg-canvas {
+  background-color: #ebe9e4;
+  background-image: radial-gradient(#d5d2c8 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.font-grotesk {
+  font-family: var(--font-grotesk), monospace, sans-serif;
+}
+
+.framer-card {
+  background: #f5f4f0;
+  border: 1px solid #d4d1c8;
+  box-shadow: 0 4px 20px -2px rgba(18, 18, 18, 0.05);
+}
+
+.framer-card-dark {
+  background: #121212;
+  color: #ebe9e4;
+  border: 1px solid #2a2a2a;
+}
+
+.orange-gradient-btn {
+  background: linear-gradient(135deg, #f85e00 0%, #ff7800 100%);
+  box-shadow: 0 4px 14px rgba(248, 94, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.orange-gradient-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(248, 94, 0, 0.45);
+}
+
+.pixel-border {
+  border: 2px solid #121212;
+  box-shadow: 4px 4px 0px #121212;
+}
+
+.pixel-badge {
+  font-family: var(--font-grotesk), monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Smooth Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ebe9e4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c2b8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a59b;
+}
