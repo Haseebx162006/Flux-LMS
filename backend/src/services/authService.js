@@ -63,13 +63,14 @@ exports.signUp = async (data) => {
         throw new Error("Database error saving user");
     }
 
-    sendOtpEmail(lowerEmail, otp).catch(error => {
-        console.warn("Email service warning during signUp:", error?.message || error);
-    });
+    try {
+        await sendOtpEmail(lowerEmail, otp);
+    } catch (error) {
+        console.error("Email service warning during signUp:", error?.message || error);
+    }
 
     return { 
-        message: `OTP verification code sent to ${lowerEmail}.`,
-        otp: String(otp)
+        message: `OTP verification code sent to ${lowerEmail}. Please check your email inbox.`
     };
 };
 
@@ -191,11 +192,13 @@ exports.forgotPassword = async (data) => {
         throw new Error("Database error saving reset code");
     }
 
-    sendPasswordResetEmail(lowerEmail, otp).catch(error => {
-        console.warn("Failed to send password reset email:", error);
-    });
+    try {
+        await sendPasswordResetEmail(lowerEmail, otp);
+    } catch (error) {
+        console.error("Failed to send password reset email:", error);
+    }
 
-    return { message: `Verification code sent to ${lowerEmail}.`, otp: String(otp) };
+    return { message: `Verification code sent to ${lowerEmail}. Please check your email inbox.` };
 };
 
 // Reset Password Method

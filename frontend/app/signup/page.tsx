@@ -38,22 +38,16 @@ export default function SignupPage() {
     setError('');
     setMessage('');
 
-    console.log("🚀 Dispatching signUp request to backend for:", email);
-
     try {
       const res = await signUp({ name, email, password });
-      console.log("✅ SignUp Response received from backend:", res);
-      setMessage(res.message || `OTP verification code sent to ${email}. Check your inbox or backend terminal.`);
+      setMessage(res.message || `OTP verification code sent to ${email}. Please check your email inbox.`);
       setStep('otp');
     } catch (apiError: any) {
-      console.error("❌ SignUp Error from backend API:", apiError);
       const msg = apiError?.response?.data?.message;
       if (msg) {
         setError(msg);
       } else {
-        // Fallback test mode if server unreachable
-        setMessage(`Verification code dispatched to ${email}. Enter code from your backend terminal.`);
-        setStep('otp');
+        setError("Failed to create account. Please check your internet connection.");
       }
     } finally {
       setIsSubmitting(false);
@@ -68,13 +62,8 @@ export default function SignupPage() {
     }
 
     setIsSubmitting(true);
-    setError('');
-
-    console.log("🚀 Dispatching verifyOtp request for:", email, "with code:", otpCode);
-
     try {
-      const verifyRes = await verifyOtp(email, otpCode);
-      console.log("✅ OTP Verified successfully:", verifyRes);
+      await verifyOtp(email, otpCode);
       
       // Auto sign-in after successful verification
       try {
@@ -86,7 +75,6 @@ export default function SignupPage() {
       }
       router.push('/');
     } catch (apiError: any) {
-      console.error("❌ OTP Verification Error:", apiError);
       setError(apiError?.response?.data?.message || 'Invalid or expired OTP code.');
     } finally {
       setIsSubmitting(false);
