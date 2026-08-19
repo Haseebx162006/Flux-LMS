@@ -3,12 +3,14 @@
 import React from 'react';
 import { ActiveTab } from '../types';
 import { Globe, Share2, MessageCircle } from 'lucide-react';
+import { AuthUser } from './AuthModal';
 
 interface FooterProps {
   setActiveTab: (tab: ActiveTab) => void;
+  user?: AuthUser | null;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
+export const Footer: React.FC<FooterProps> = ({ setActiveTab, user }) => {
   return (
     <footer className="mt-20 border-t border-[#d4d1c8] bg-[#f5f4f0] py-12 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -28,7 +30,12 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
         <div className="space-y-2 text-xs font-semibold">
           <p className="font-mono text-[#f85e00] uppercase font-bold text-[11px] mb-1">PLATFORM</p>
           <p onClick={() => setActiveTab('home')} className="hover:text-[#f85e00] cursor-pointer">Explore Courses</p>
-          <p onClick={() => setActiveTab('dashboard')} className="hover:text-[#f85e00] cursor-pointer">Student Portal</p>
+          <p onClick={() => setActiveTab('courses')} className="hover:text-[#f85e00] cursor-pointer">Course Catalog</p>
+          {user?.role === 'ADMIN' ? (
+            <p onClick={() => setActiveTab('admin')} className="hover:text-[#f85e00] cursor-pointer font-bold text-[#f85e00]">Admin Control Panel</p>
+          ) : (
+            <p onClick={() => setActiveTab('dashboard')} className="hover:text-[#f85e00] cursor-pointer">Student Portal</p>
+          )}
         </div>
 
         <div className="space-y-2 text-xs font-semibold">

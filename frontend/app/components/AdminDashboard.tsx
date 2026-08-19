@@ -98,11 +98,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleToggleBlock = async (userId: number) => {
     try {
+      setUsersList((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isBlocked: !u.isBlocked } : u))
+      );
       await toggleBlockUser(userId);
-      setActionMessage("User status updated successfully!");
+      setActionMessage(`User #${userId} status updated successfully!`);
+      const updated = await getAllUsers();
+      if (updated) {
+        setUsersList(updated);
+      }
+    } catch (err: any) {
+      console.error("Failed to update user block status:", err);
+      const errMsg = err?.response?.data?.message || err?.message || "Failed to update user block status.";
+      setActionMessage(errMsg);
       fetchUsers();
-    } catch (err) {
-      setActionMessage("Failed to update user block status.");
     }
   };
 

@@ -46,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Navigation Links - PUBLIC links ONLY (Admin Panel REMOVED for public) */}
+        {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-1 bg-[#ebe9e4] p-1.5 rounded-xl border border-[#d4d1c8]">
           <button
             onClick={() => setActiveTab('home')}
@@ -72,26 +72,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             Courses
           </button>
 
-          {/* Student Portal available for all */}
-          <button
-            onClick={() => {
-              if (!user) {
-                onOpenAuth('signin');
-              } else {
-                setActiveTab('dashboard');
-              }
-            }}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'dashboard'
-                ? 'bg-[#121212] text-[#ebe9e4] shadow-sm'
-                : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4 text-[#f85e00]" />
-            Student Portal
-          </button>
+          {/* Student Portal: ONLY visible for STUDENT users or unauthenticated visitors (NEVER for ADMIN) */}
+          {user?.role !== 'ADMIN' && (
+            <button
+              onClick={() => {
+                if (!user) {
+                  onOpenAuth('signin');
+                } else {
+                  setActiveTab('dashboard');
+                }
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-[#121212] text-[#ebe9e4] shadow-sm'
+                  : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4 text-[#f85e00]" />
+              Student Portal
+            </button>
+          )}
 
-          {/* Admin Panel ONLY visible if logged in user is an ADMIN */}
+          {/* Admin Panel: ONLY visible if logged in user is an ADMIN */}
           {user?.role === 'ADMIN' && (
             <button
               onClick={() => setActiveTab('admin')}
@@ -129,16 +131,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* User Dropdown Menu */}
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-[#f5f4f0] border border-[#d4d1c8] rounded-2xl shadow-2xl p-2 z-50 text-xs font-bold space-y-1">
-                  <button
-                    onClick={() => {
-                      setActiveTab('dashboard');
-                      setShowUserMenu(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#ebe9e4] text-[#121212] flex items-center gap-2 cursor-pointer"
-                  >
-                    <LayoutDashboard className="w-4 h-4 text-[#f85e00]" />
-                    My Student Portal
-                  </button>
+                  {user.role !== 'ADMIN' && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('dashboard');
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#ebe9e4] text-[#121212] flex items-center gap-2 cursor-pointer"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-[#f85e00]" />
+                      My Student Portal
+                    </button>
+                  )}
 
                   {user.role === 'ADMIN' && (
                     <button

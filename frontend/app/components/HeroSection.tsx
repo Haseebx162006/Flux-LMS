@@ -2,15 +2,17 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, TrendingUp, Play, Star, CheckCircle2, Shield, Zap, BookOpen, Award } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, Play, Star, CheckCircle2, Shield, Zap, BookOpen, Award, ShieldCheck } from 'lucide-react';
 import { ActiveTab } from '../types';
+import { AuthUser } from './AuthModal';
 
 interface HeroSectionProps {
   setActiveTab: (tab: ActiveTab) => void;
   onExploreCourses: () => void;
+  user?: AuthUser | null;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExploreCourses }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExploreCourses, user }) => {
   return (
     <section className="relative pt-8 pb-16 px-4 md:px-8 max-w-7xl mx-auto w-full">
       {/* Main Framer Hero Container matching screenshot design */}
@@ -28,31 +30,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ebe9e4] border border-[#d4d1c8] text-xs font-mono font-bold text-[#121212]"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ebe9e4] border border-[#d4d1c8] text-xs font-mono font-medium text-[#121212]"
             >
-              <span className="text-[#f85e00] font-extrabold">[1/5]</span>
-              <span>REVOLUTIONIZING ONLINE EDUCATION & SKILLS</span>
+              <span className="w-2 h-2 rounded-full bg-[#f85e00] animate-pulse" />
+              <span>Next-Gen Fullstack LMS</span>
+              <span className="text-[#5a5955]">|</span>
+              <span className="text-[#f85e00] font-bold">2026 Curriculum</span>
             </motion.div>
 
-            {/* Headline focusing on Learning Management & Skills */}
-            <motion.div
+            {/* Headline */}
+            <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="space-y-2"
             >
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#121212] tracking-tight leading-[1.08] font-sans">
-                MASTER DIGITAL <br />
-                <span className="text-[#121212]">SKILLS THAT MOVE</span> <br />
-                <span className="text-[#f85e00]">YOU FORWARD</span>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-[#121212] leading-[1.08]">
+                Master High-Impact <br />
+                <span className="text-[#f85e00] underline decoration-[#121212]/20 decoration-wavy decoration-2">
+                  Software Engineering.
+                </span>
               </h1>
-              <p className="text-base sm:text-lg text-[#5a5955] max-w-xl font-medium pt-2">
-                Learn from industry experts with hands-on video curricula, interactive projects, and verified certificates designed to elevate your tech career.
+              <p className="text-sm md:text-base text-[#5a5955] max-w-xl font-normal leading-relaxed pt-2">
+                Gain verified certificates, learn from industry experts, stream DRM-protected video masterclasses, and level up your software engineering career with real projects.
               </p>
             </motion.div>
 
-            {/* CTA Buttons */}
-            <motion.div
+            {/* Action Buttons */}
+            <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -66,13 +71,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
                 <ArrowUpRight className="w-5 h-5" />
               </button>
 
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className="px-7 py-3.5 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-bold text-base transition-colors flex items-center gap-2 border border-[#c5c2b8] cursor-pointer"
-              >
-                <Play className="w-4 h-4 fill-current text-[#f85e00]" />
-                Student Portal
-              </button>
+              {user?.role === 'ADMIN' ? (
+                <button
+                  onClick={() => setActiveTab('admin')}
+                  className="px-7 py-3.5 rounded-xl bg-[#121212] text-[#f85e00] hover:bg-[#252525] font-bold text-base transition-colors flex items-center gap-2 border border-[#121212] cursor-pointer shadow-md"
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  Admin Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className="px-7 py-3.5 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-bold text-base transition-colors flex items-center gap-2 border border-[#c5c2b8] cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-current text-[#f85e00]" />
+                  Student Portal
+                </button>
+              )}
             </motion.div>
 
             {/* LMS Trust Highlights */}
@@ -93,88 +108,73 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
 
           </div>
 
-          {/* Right Column: Hero Visual Card (LMS & Course Learning Focused) */}
-          <div className="lg:col-span-5 relative">
-            
-            {/* Floating Stat Badge (132% GROWTH) matching screenshot */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="absolute -top-4 -right-2 md:right-4 z-20 bg-[#121212] text-[#ebe9e4] p-4 rounded-2xl border border-[#2a2a2a] shadow-2xl max-w-[220px]"
-            >
-              <div className="flex items-center gap-2 text-[#f85e00] font-extrabold text-xl font-mono">
-                <TrendingUp className="w-5 h-5" />
-                <span>↑ 132%</span>
-                <span className="text-xs text-white uppercase font-bold tracking-wider">GROWTH</span>
-              </div>
-              <p className="text-[11px] text-[#a8a59b] mt-1 font-medium leading-snug">
-                Our learners achieve measurable career growth through targeted skill mastery.
-              </p>
-            </motion.div>
-
-            {/* 3D Tech Learning Canvas Mockup Card */}
+          {/* Right Column: Hero Showcase Visual Card */}
+          <div className="lg:col-span-5">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-[#ebe9e4] rounded-2xl p-6 border-2 border-[#121212] shadow-2xl space-y-4 relative overflow-hidden"
+              className="relative"
             >
-              {/* Header pixel bar */}
-              <div className="flex items-center justify-between border-b border-[#c5c2b8] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#f85e00]" />
-                  <div className="w-3 h-3 rounded-full bg-[#121212]" />
-                  <div className="w-3 h-3 rounded-full bg-[#c5c2b8]" />
-                </div>
-                <span className="text-xs font-mono font-bold text-[#121212]">FLUX_LEARNING_ENGINE_V2</span>
-              </div>
+              <div className="framer-card rounded-2xl overflow-hidden border border-[#d4d1c8] bg-[#ebe9e4] shadow-2xl relative">
+                
+                {/* Course Banner Image Preview */}
+                <div className="relative aspect-video w-full bg-[#121212] overflow-hidden group">
+                  <img 
+                    src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80" 
+                    alt="LMS Masterclass"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-80" />
+                  
+                  {/* Floating Live Badge */}
+                  <div className="absolute top-3 left-3 bg-[#121212]/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#d4d1c8]/30 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    <span className="text-[11px] font-bold text-white font-mono uppercase">Interactive LMS</span>
+                  </div>
 
-              {/* Central LMS Course Session Showcase */}
-              <div className="relative rounded-xl overflow-hidden bg-[#121212] text-white p-6 space-y-4 shadow-inner">
-                <div className="flex items-center justify-between text-xs font-mono text-[#f85e00]">
-                  <span>● INTERACTIVE LESSON MODULE</span>
-                  <span>4.9 ★★★★★</span>
+                  {/* Play Button Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-[#f85e00] text-white flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                      <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-white tracking-tight">
-                    Full-Stack Web Dev & AI Engineering
+                {/* Card Meta Content */}
+                <div className="p-5 space-y-3 bg-[#f5f4f0]">
+                  <div className="flex items-center justify-between">
+                    <span className="bg-[#121212] text-[#f85e00] px-2.5 py-1 rounded-md text-xs font-mono font-bold">
+                      FLAGSHIP TRACK
+                    </span>
+                    <div className="flex items-center gap-1 text-xs font-bold text-[#121212]">
+                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <span>4.9 (1.8k reviews)</span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-extrabold text-lg text-[#121212]">
+                    Full-Stack Next.js 15 & Enterprise AI Architecture
                   </h3>
-                  <p className="text-xs text-[#a8a59b]">
-                    Building production-ready applications with hands-on guidance.
-                  </p>
-                </div>
 
-                {/* Progress simulator */}
-                <div className="space-y-1.5 pt-2">
-                  <div className="flex justify-between text-xs font-mono text-[#ebe9e4]">
-                    <span>Module 04 / 10</span>
-                    <span className="text-[#f85e00] font-bold">72% Complete</span>
-                  </div>
-                  <div className="w-full bg-[#2a2a2a] h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#f85e00] to-[#ff7800] h-full w-[72%]" />
+                  <div className="flex items-center justify-between pt-2 border-t border-[#d4d1c8] text-xs font-medium text-[#5a5955]">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" 
+                        alt="Instructor" 
+                        className="w-6 h-6 rounded-full object-cover border border-[#121212]"
+                      />
+                      <span>Sarah Jenkins</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#121212]">24 Modules • DRM Secured</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Bottom LMS Status Display */}
-              <div className="bg-[#121212] text-[#ebe9e4] rounded-xl p-4 flex items-center justify-between border border-[#2a2a2a]">
-                <div>
-                  <span className="text-[10px] text-[#f85e00] font-mono font-bold block">LEARNING MATRIX</span>
-                  <span className="text-lg font-black font-mono tracking-widest text-white">FLUX ACADEMY</span>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-[#f85e00] flex items-center justify-center text-white font-bold">
-                  ⚡
-                </div>
               </div>
-
             </motion.div>
-
           </div>
 
         </div>
-
       </div>
     </section>
   );

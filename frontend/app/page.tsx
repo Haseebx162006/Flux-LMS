@@ -40,7 +40,9 @@ function HomeContent() {
     const savedUser = getStoredUser();
     if (savedUser) {
       setUser(savedUser);
-      if (requestedTab === 'dashboard') {
+      if (savedUser.role === 'ADMIN') {
+        setActiveTab('admin');
+      } else if (requestedTab === 'dashboard') {
         setActiveTab('dashboard');
       }
     }
@@ -53,7 +55,7 @@ function HomeContent() {
         console.error("Error fetching courses from database API:", err);
       }
 
-      if (savedUser) {
+      if (savedUser && savedUser.role !== 'ADMIN') {
         try {
           const userEnrollments = await getMyEnrollments();
           setEnrollments(userEnrollments || []);
@@ -80,8 +82,10 @@ function HomeContent() {
       const fetchedCourses = await getCourses();
       setCourses(fetchedCourses || []);
       
-      const userEnrollments = await getMyEnrollments();
-      setEnrollments(userEnrollments || []);
+      if (loggedInUser.role !== 'ADMIN') {
+        const userEnrollments = await getMyEnrollments();
+        setEnrollments(userEnrollments || []);
+      }
     } catch (e) {
       // Ignored
     }
@@ -129,6 +133,7 @@ function HomeContent() {
           <>
             <HeroSection
               setActiveTab={setActiveTab}
+              user={user}
               onExploreCourses={() => {
                 const discoveryEl = document.getElementById('catalog-section');
                 if (discoveryEl) {
@@ -173,7 +178,7 @@ function HomeContent() {
           </div>
         )}
 
-        {activeTab === 'dashboard' && (
+        {activeTab === 'dashboard' && user?.role !== 'ADMIN' && (
           <div className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
             <StudentDashboard
               enrollments={enrollments}
@@ -198,7 +203,7 @@ function HomeContent() {
       </main>
 
       {/* Footer */}
-      <Footer setActiveTab={setActiveTab} />
+      <Footer setActiveTab={setActiveTab} user={user} />
 
       {/* Course Details Modal */}
       <CourseDetailsModal
