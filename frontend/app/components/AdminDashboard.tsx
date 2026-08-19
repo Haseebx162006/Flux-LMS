@@ -591,35 +591,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
-              {/* COURSE PICTURE / THUMBNAIL UPLOAD (CLOUDINARY) */}
+              {/* COURSE TITLE PICTURE / THUMBNAIL UPLOAD (CLOUDINARY) */}
               <div className="p-4 rounded-2xl bg-[#ebe9e4] border border-[#d4d1c8] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-bold text-xs">
-                    <ImageIcon className="w-4 h-4 text-[#f85e00]" /> Course Picture (Cloudinary)
+                  <span className="flex items-center gap-1.5 font-bold text-xs text-[#121212]">
+                    <ImageIcon className="w-4 h-4 text-[#f85e00]" /> Course Title Picture / Cover (Cloudinary)
                   </span>
                   <span className="text-[10px] font-mono text-[#5a5955]">PNG, JPG, WEBP (Max 5MB)</span>
                 </div>
 
                 {imagePreview ? (
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-[#121212] border border-[#d4d1c8]">
-                    <img src={imagePreview} alt="Course preview" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImagePreview('');
-                        setThumbnailUrl('');
-                      }}
-                      className="absolute top-2 right-2 bg-rose-600 text-white p-1.5 rounded-lg text-[10px] font-bold shadow-md hover:bg-rose-700"
-                    >
-                      Remove Picture
-                    </button>
+                  <div className="space-y-2">
+                    <div className="relative aspect-video rounded-xl overflow-hidden bg-[#121212] border border-[#d4d1c8] shadow-inner">
+                      <img src={imagePreview} alt="Course title preview" className="w-full h-full object-cover" />
+                      <div className="absolute top-2 left-2 bg-[#121212]/80 backdrop-blur-md text-[#f85e00] px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono">
+                        Title Picture Selected
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview('');
+                          setThumbnailUrl('');
+                        }}
+                        className="absolute top-2 right-2 bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-md cursor-pointer transition-colors"
+                      >
+                        Remove Picture
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <label className="border-2 border-dashed border-[#c5c2b8] hover:border-[#f85e00] rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#f5f4f0] transition-colors">
-                      <Upload className="w-6 h-6 text-[#f85e00]" />
-                      <span className="text-xs font-bold text-[#121212]">Click to upload picture from device</span>
-                      <span className="text-[10px] text-[#5a5955]">Will be uploaded to Cloudinary</span>
+                    <label className="border-2 border-dashed border-[#c5c2b8] hover:border-[#f85e00] rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#f5f4f0] hover:bg-[#ebe9e4] transition-all group">
+                      <div className="w-10 h-10 rounded-full bg-[#ebe9e4] group-hover:bg-[#f85e00]/10 flex items-center justify-center transition-colors">
+                        <Upload className="w-5 h-5 text-[#f85e00]" />
+                      </div>
+                      <span className="text-xs font-bold text-[#121212]">Click to upload Course Title Picture</span>
+                      <span className="text-[10px] text-[#5a5955]">Image will be uploaded to Cloudinary</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -628,8 +635,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </label>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#5a5955] uppercase font-mono">OR PASTE URL:</span>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[10px] text-[#5a5955] uppercase font-mono whitespace-nowrap">OR PASTE URL:</span>
                       <input
                         type="url"
                         placeholder="https://images.unsplash.com/..."
