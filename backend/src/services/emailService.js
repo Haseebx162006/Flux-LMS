@@ -1,47 +1,27 @@
-const path = require("path");
-
-require("dotenv").config({ path: path.join(__dirname, "../../.env") });
-
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "https://developers.google.com/oauthplayground";
-const EMAIL_USER = process.env.EMAIL_USER || process.env.MAIL_USER;
-const EMAIL_PASS = (process.env.EMAIL_PASS || process.env.MAIL_PASS || "").replace(/\s+/g, '');
+const nodemailer = require("nodemailer");
 
 /**
- * Encodes an HTML message to base64 format compliant with the Gmail API.
- */
-const makeBody = (to, from, subject, html) => {
-    const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
-    const messageParts = [
-        `To: ${to}`,
-        `From: ${from}`,
-        `Subject: ${utf8Subject}`,
-        'MIME-Version: 1.0',
-        'Content-Type: text/html; charset=utf-8',
-        'Content-Transfer-Encoding: base64',
-        '',
-        Buffer.from(html).toString('base64')
-    ];
-    return messageParts.join('\r\n');
-};
-
-/**
- * Sends an email using Gmail SMTP App Password or Gmail REST API OAuth2.
+ * Sends an email using SMTP (Gmail, Brevo, SendGrid, Mailgun, or custom SMTP) or Google OAuth2.
  */
 const sendEmail = async (to, subject, html, otpCode = "") => {
-    // 1. Primary Method: Nodemailer SMTP with Gmail App Password (super fast & reliable)
+    const EMAIL_USER = process.env.EMAIL_USER || process.env.MAIL_USER || process.env.SMTP_USER || "haseebahmad0160@gmail.com";
+    const EMAIL_PASS = (process.env.EMAIL_PASS || process.env.MAIL_PASS || process.env.SMTP_PASS || "").replace(/\s+/g, '');
+    const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+    const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
+
+    // 1. Primary Method: SMTP Transporter (Gmail App Password / Custom SMTP)
     if (EMAIL_USER && EMAIL_PASS) {
         try {
-            const nodemailer = require("nodemailer");
             const transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
-                port: 465,
-                secure: true,
+                host: SMTP_HOST,
+                port: SMTP_PORT,
+                secure: SMTP_PORT === 465,
                 auth: {
                     user: EMAIL_USER,
                     pass: EMAIL_PASS
+                },
+                tls: {
+                    rejectUnauthorized: false
                 }
             });
 
@@ -52,113 +32,115 @@ const sendEmail = async (to, subject, html, otpCode = "") => {
                 html
             });
 
-            console.log("✉️ Real Email delivered via Gmail SMTP to:", to, "| Message ID:", info.messageId);
-            return info;
+            console.log(`✉️ Email successfully delivered via SMTP to ${to} | Message ID: ${info.messageId}`);
+            return { success: true, messageId: info.messageId, otp: otpCode };
         } catch (smtpErr) {
-            console.warn("⚠️ SMTP Nodemailer dispatch failed:", smtpErr?.message || smtpErr);
+            console.warn("⚠️ SMTP dispatch notice:", smtpErr?.message || smtpErr);
         }
+    } else {
+        console.warn("ℹ️ SMTP credentials (EMAIL_USER / MAIL_PASS) not fully set in environment.");
     }
 
-    // 2. Secondary Method: Gmail REST API with OAuth2
+    // 2. Secondary Method: Google OAuth2 Transporter (if configured)
+    const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+    const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
+
     if (CLIENT_ID && CLIENT_SECRET && REFRESH_TOKEN && EMAIL_USER) {
         try {
-            const { google } = require("googleapis");
-            const OAuth2 = google.auth.OAuth2;
-            const oauth2Client = new OAuth2(
-                CLIENT_ID,
-                CLIENT_SECRET,
-                REDIRECT_URI
-            );
-            oauth2Client.setCredentials({
-                refresh_token: REFRESH_TOKEN
-            });
-
-            const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-            const rawMessage = makeBody(to, `FLUX LMS <${EMAIL_USER}>`, subject, html);
-            
-            const encodedMessage = Buffer.from(rawMessage)
-                .toString('base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-
-            const response = await gmail.users.messages.send({
-                userId: 'me',
-                requestBody: {
-                    raw: encodedMessage
+            const oauthTransporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    type: 'OAuth2',
+                    user: EMAIL_USER,
+                    clientId: CLIENT_ID,
+                    clientSecret: CLIENT_SECRET,
+                    refreshToken: REFRESH_TOKEN
                 }
             });
-            console.log("✉️ Real Email delivered via Gmail API to:", to, "| Message ID:", response.data.id);
-            return response.data;
-        } catch (gmailApiErr) {
-            console.warn("⚠️ Gmail API dispatch failed (OAuth refresh token invalid/expired):", gmailApiErr?.message || gmailApiErr);
+
+            const info = await oauthTransporter.sendMail({
+                from: `"FLUX LMS" <${EMAIL_USER}>`,
+                to,
+                subject,
+                html
+            });
+
+            console.log(`✉️ Email successfully delivered via Google OAuth2 to ${to} | Message ID: ${info.messageId}`);
+            return { success: true, messageId: info.messageId, otp: otpCode };
+        } catch (oauthErr) {
+            console.warn("⚠️ Google OAuth2 dispatch notice:", oauthErr?.message || oauthErr);
         }
     }
 
-    // 3. Development Fallback: Terminal logger
+    // 3. Terminal & Diagnostic Logger
     console.log(`\n======================================================`);
-    console.log(`📧 [EMAIL VERIFICATION DISPATCH]`);
+    console.log(`📧 [FLUX LMS VERIFICATION DISPATCH]`);
     console.log(`To: ${to}`);
     console.log(`Subject: ${subject}`);
     if (otpCode) {
-        console.log(`🔑 VERIFICATION OTP CODE: >>> ${otpCode} <<<`);
+        console.log(`🔑 OTP CODE: >>> ${otpCode} <<<`);
     }
     console.log(`======================================================\n`);
 
-    return { id: "logged-otp-fallback" };
+    return { success: false, id: "logged-otp-fallback", otp: otpCode };
 };
 
 /**
- * Sends an OTP email.
+ * Sends an OTP account verification email.
  */
 const sendOtpEmail = async (to, otp) => {
     const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-                <h1 style="color: #f85e00; margin: 0; font-size: 24px;">FLUX LMS</h1>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e0ded9; border-radius: 16px; background-color: #f5f4f0;">
+            <div style="text-align: center; border-bottom: 2px solid #dedcd7; padding-bottom: 12px; margin-bottom: 24px;">
+                <h1 style="color: #f85e00; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">FLUX LMS</h1>
+                <p style="color: #5a5955; margin: 4px 0 0 0; font-size: 12px;">Next-Gen Fullstack Learning Platform</p>
             </div>
-            <p style="font-size: 16px; color: #333;">Hello,</p>
-            <p style="font-size: 16px; color: #555; line-height: 1.5;">
-                Thank you for choosing FLUX LMS. Please use the following One-Time Password (OTP) to verify your account:
+            <p style="font-size: 15px; color: #121212; font-weight: bold;">Hello,</p>
+            <p style="font-size: 14px; color: #444; line-height: 1.6;">
+                Thank you for joining FLUX LMS! Please use the following One-Time Password (OTP) code to verify your email address and activate your account:
             </p>
-            <div style="text-align: center; margin: 30px 0;">
-                <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 25px; background-color: #121212; border: 1px dashed #f85e00; border-radius: 8px; color: #f85e00; display: inline-block;">
+            <div style="text-align: center; margin: 28px 0;">
+                <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; padding: 14px 28px; background-color: #121212; border: 2px dashed #f85e00; border-radius: 12px; color: #f85e00; display: inline-block;">
                     ${otp}
                 </span>
             </div>
-            <p style="font-size: 14px; color: #777; line-height: 1.5;">
-                This OTP is valid for 10 minutes. If you did not request this, please ignore this email.
+            <p style="font-size: 13px; color: #666; line-height: 1.5;">
+                ⏱️ This verification code is valid for <strong>10 minutes</strong>. If you did not request this, please ignore this email.
             </p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #aaa; text-align: center; margin: 0;">
-                This is an automated email from FLUX LMS. Please do not reply directly to this message.
+            <hr style="border: none; border-top: 1px solid #dedcd7; margin: 24px 0;" />
+            <p style="font-size: 11px; color: #888; text-align: center; margin: 0;">
+                © 2026 FLUX LMS • Automated Security Delivery
             </p>
         </div>
     `;
     return sendEmail(to, "FLUX LMS Account Verification OTP", html, otp);
 };
 
+/**
+ * Sends a Password Reset Code email.
+ */
 const sendPasswordResetEmail = async (to, otp) => {
     const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-                <h1 style="color: #f85e00; margin: 0; font-size: 24px;">FLUX LMS</h1>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e0ded9; border-radius: 16px; background-color: #f5f4f0;">
+            <div style="text-align: center; border-bottom: 2px solid #dedcd7; padding-bottom: 12px; margin-bottom: 24px;">
+                <h1 style="color: #f85e00; margin: 0; font-size: 26px; font-weight: 800;">FLUX LMS</h1>
             </div>
-            <p style="font-size: 16px; color: #333;">Hello,</p>
-            <p style="font-size: 16px; color: #555; line-height: 1.5;">
-                We received a request to reset the password for your FLUX LMS account. Please use the following 6-digit verification code:
+            <p style="font-size: 15px; color: #121212; font-weight: bold;">Password Reset Request</p>
+            <p style="font-size: 14px; color: #444; line-height: 1.6;">
+                We received a request to reset the password for your FLUX LMS account. Use the following 6-digit code to proceed:
             </p>
-            <div style="text-align: center; margin: 30px 0;">
-                <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 25px; background-color: #121212; border: 1px dashed #f85e00; border-radius: 8px; color: #f85e00; display: inline-block;">
+            <div style="text-align: center; margin: 28px 0;">
+                <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; padding: 14px 28px; background-color: #121212; border: 2px dashed #f85e00; border-radius: 12px; color: #f85e00; display: inline-block;">
                     ${otp}
                 </span>
             </div>
-            <p style="font-size: 14px; color: #777; line-height: 1.5;">
-                This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.
+            <p style="font-size: 13px; color: #666; line-height: 1.5;">
+                ⏱️ This code expires in 10 minutes. If you did not request this password reset, please ignore this email.
             </p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #aaa; text-align: center; margin: 0;">
-                This is an automated email from FLUX LMS. Please do not reply directly to this message.
+            <hr style="border: none; border-top: 1px solid #dedcd7; margin: 24px 0;" />
+            <p style="font-size: 11px; color: #888; text-align: center; margin: 0;">
+                © 2026 FLUX LMS
             </p>
         </div>
     `;

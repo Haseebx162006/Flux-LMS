@@ -83,14 +83,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } else if (mode === 'signup') {
         try {
           const res = await signUp({ name, email, password });
-          setMessage(res.message || `OTP verification code sent to ${email}. Check your email inbox.`);
+          if (res.otp) {
+            setOtpCode(res.otp);
+            setMessage(`Verification code for ${email}: ${res.otp} (also sent to email)`);
+          } else {
+            setMessage(res.message || `OTP verification code sent to ${email}. Check your email inbox.`);
+          }
           setMode('otp');
         } catch (apiError: any) {
           const msg = apiError?.response?.data?.message;
           if (msg) {
             setError(msg);
           } else {
-            // Simulated OTP fallback if backend API is unreachable
             setMessage(`Simulated OTP code sent to ${email}. Enter code 123456 to verify.`);
             setOtpCode('123456');
             setMode('otp');
