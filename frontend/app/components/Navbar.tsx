@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ActiveTab } from '../types';
 import { AuthUser } from './AuthModal';
-import { Home as HomeIcon, BookOpen, LayoutDashboard, ShieldCheck, ArrowUpRight, LogOut } from 'lucide-react';
+import { Sparkles, BookOpen, LayoutDashboard, ShieldCheck, ArrowUpRight, LogOut, Users } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -27,12 +27,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-4 z-40 px-4 md:px-8 max-w-7xl mx-auto w-full font-sans">
       <nav className="framer-card rounded-2xl p-3 md:p-4 flex items-center justify-between shadow-lg border border-[#d4d1c8] bg-[#f5f4f0]/90 backdrop-blur-md">
         
-        {/* Brand Logo */}
+        {/* Brand Logo matching screenshot */}
         <div 
           onClick={() => setActiveTab('home')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#121212] flex items-center justify-center text-[#f85e00] font-bold text-xl tracking-tight shadow-md group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-[#121212] flex items-center justify-center text-[#f85e00] font-black text-xl tracking-tight shadow-md group-hover:scale-105 transition-transform">
             F
           </div>
           <div>
@@ -46,25 +46,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Navigation Links */}
+        {/* Middle Navigation Tabs matching screenshot */}
         <div className="hidden md:flex items-center gap-1 bg-[#ebe9e4] p-1.5 rounded-xl border border-[#d4d1c8]">
           <button
             onClick={() => setActiveTab('home')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'home'
-                ? 'bg-[#121212] text-[#ebe9e4] shadow-sm'
+                ? 'bg-[#121212] text-white shadow-sm'
                 : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
             }`}
           >
-            <HomeIcon className="w-4 h-4 text-[#f85e00]" />
-            Home
+            <Sparkles className="w-4 h-4 text-[#f85e00]" />
+            Explore
           </button>
 
           <button
             onClick={() => setActiveTab('courses')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'courses'
-                ? 'bg-[#121212] text-[#ebe9e4] shadow-sm'
+                ? 'bg-[#121212] text-white shadow-sm'
                 : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
             }`}
           >
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             Courses
           </button>
 
-          {/* Student Portal: ONLY visible for STUDENT users or unauthenticated visitors (NEVER for ADMIN) */}
+          {/* Student Portal */}
           {user?.role !== 'ADMIN' && (
             <button
               onClick={() => {
@@ -82,22 +82,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setActiveTab('dashboard');
                 }
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'dashboard'
-                  ? 'bg-[#121212] text-[#ebe9e4] shadow-sm'
+                  ? 'bg-[#121212] text-white shadow-sm'
                   : 'text-[#5a5955] hover:text-[#121212] hover:bg-[#dedcd7]'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4 text-[#f85e00]" />
+              <Users className="w-4 h-4 text-[#f85e00]" />
               Student Portal
             </button>
           )}
 
-          {/* Admin Panel: ONLY visible if logged in user is an ADMIN */}
+          {/* Admin Panel (Admin only) */}
           {user?.role === 'ADMIN' && (
             <button
               onClick={() => setActiveTab('admin')}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'admin'
                   ? 'bg-[#f85e00] text-white shadow-sm'
                   : 'text-[#f85e00] hover:bg-[#dedcd7]'
@@ -109,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* User Auth Section */}
+        {/* Right User Auth Action Section */}
         <div className="flex items-center gap-3">
           {user ? (
             <div className="relative">
@@ -173,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Link
                 href="/login"
                 className="px-4 py-2.5 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-bold text-xs transition-colors border border-[#c5c2b8]"
@@ -183,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <Link
                 href="/signup"
-                className="orange-gradient-btn px-5 py-2.5 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                className="orange-gradient-btn px-5 py-2.5 rounded-xl text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:scale-[1.02] transition-transform"
               >
                 Get Started
                 <ArrowUpRight className="w-3.5 h-3.5" />

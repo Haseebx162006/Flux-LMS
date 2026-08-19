@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, TrendingUp, Play, Star, CheckCircle2, Shield, Zap, BookOpen, Award, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, Play, BookOpen, Award, Zap, Sparkles } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { AuthUser } from './AuthModal';
 
@@ -14,28 +14,26 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExploreCourses, user }) => {
   return (
-    <section className="relative pt-8 pb-16 px-4 md:px-8 max-w-7xl mx-auto w-full">
-      {/* Main Framer Hero Container matching screenshot design */}
+    <section className="relative pt-6 pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full font-sans">
+      {/* Main Framer Hero Container */}
       <div className="framer-card rounded-3xl p-6 md:p-12 border border-[#d4d1c8] bg-[#f5f4f0] relative overflow-hidden shadow-xl">
         
-        {/* Background Accent Grids */}
+        {/* Subtle orange accent glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#f85e00]/10 rounded-full blur-3xl pointer-events-none" />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           
-          {/* Left Column: Headlines & Content - LMS & Learning Focus */}
+          {/* Left Column: Headlines & Content */}
           <div className="lg:col-span-7 space-y-6">
             
             {/* Top Index Badge */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ebe9e4] border border-[#d4d1c8] text-xs font-mono font-medium text-[#121212]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ebe9e4] border border-[#d4d1c8] text-xs font-mono font-bold text-[#121212]"
             >
-              <span className="w-2 h-2 rounded-full bg-[#f85e00] animate-pulse" />
-              <span>Next-Gen Fullstack LMS</span>
-              <span className="text-[#5a5955]">|</span>
-              <span className="text-[#f85e00] font-bold">2026 Curriculum</span>
+              <span className="text-[#f85e00] font-extrabold">[1/5]</span>
+              <span className="tracking-wide uppercase text-[11px]">REVOLUTIONIZING ONLINE EDUCATION & SKILLS</span>
             </motion.div>
 
             {/* Headline */}
@@ -43,16 +41,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="space-y-2"
+              className="space-y-1"
             >
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-[#121212] leading-[1.08]">
-                Master High-Impact <br />
-                <span className="text-[#f85e00] underline decoration-[#121212]/20 decoration-wavy decoration-2">
-                  Software Engineering.
-                </span>
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-black tracking-tight text-[#121212] leading-[1.05] uppercase">
+                MASTER DIGITAL <br />
+                SKILLS THAT MOVE <br />
+                <span className="text-[#f85e00]">YOU FORWARD</span>
               </h1>
-              <p className="text-sm md:text-base text-[#5a5955] max-w-xl font-normal leading-relaxed pt-2">
-                Gain verified certificates, learn from industry experts, stream DRM-protected video masterclasses, and level up your software engineering career with real projects.
+              <p className="text-xs sm:text-sm text-[#5a5955] max-w-lg font-medium leading-relaxed pt-3">
+                Learn from industry experts with hands-on video curricula, interactive projects, and verified certificates designed to elevate your tech career.
               </p>
             </motion.div>
 
@@ -65,33 +62,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
             >
               <button
                 onClick={onExploreCourses}
-                className="orange-gradient-btn px-7 py-3.5 rounded-xl text-white font-bold text-base flex items-center gap-2 cursor-pointer shadow-lg"
+                className="orange-gradient-btn px-6 py-3 rounded-xl text-white font-extrabold text-sm flex items-center gap-2 cursor-pointer shadow-md hover:scale-[1.02] transition-transform"
               >
                 Get Started
-                <ArrowUpRight className="w-5 h-5" />
+                <ArrowUpRight className="w-4 h-4" />
               </button>
 
               {user?.role === 'ADMIN' ? (
                 <button
                   onClick={() => setActiveTab('admin')}
-                  className="px-7 py-3.5 rounded-xl bg-[#121212] text-[#f85e00] hover:bg-[#252525] font-bold text-base transition-colors flex items-center gap-2 border border-[#121212] cursor-pointer shadow-md"
+                  className="px-6 py-3 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-extrabold text-sm transition-colors flex items-center gap-2 border border-[#c5c2b8] cursor-pointer"
                 >
-                  <ShieldCheck className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4 text-[#f85e00]" />
                   Admin Dashboard
                 </button>
               ) : (
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className="px-7 py-3.5 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-bold text-base transition-colors flex items-center gap-2 border border-[#c5c2b8] cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-[#dedcd7] hover:bg-[#d4d1c8] text-[#121212] font-extrabold text-sm transition-colors flex items-center gap-2 border border-[#c5c2b8] cursor-pointer"
                 >
-                  <Play className="w-4 h-4 fill-current text-[#f85e00]" />
+                  <Play className="w-3.5 h-3.5 fill-current text-[#f85e00]" />
                   Student Portal
                 </button>
               )}
             </motion.div>
 
-            {/* LMS Trust Highlights */}
-            <div className="pt-4 flex items-center gap-6 border-t border-[#d4d1c8] text-xs font-semibold text-[#5a5955]">
+            {/* Trust Highlights */}
+            <div className="pt-4 flex flex-wrap items-center gap-6 border-t border-[#d4d1c8] text-xs font-bold text-[#5a5955]">
               <div className="flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-[#f85e00]" />
                 <span>Interactive Lessons</span>
@@ -108,65 +105,73 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ setActiveTab, onExplor
 
           </div>
 
-          {/* Right Column: Hero Showcase Visual Card */}
-          <div className="lg:col-span-5">
+          {/* Right Column: Hero Showcase Visual Card matching screenshot */}
+          <div className="lg:col-span-5 relative">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
               className="relative"
             >
-              <div className="framer-card rounded-2xl overflow-hidden border border-[#d4d1c8] bg-[#ebe9e4] shadow-2xl relative">
+              {/* Outer Browser Mockup Container */}
+              <div className="rounded-3xl p-5 md:p-6 bg-[#ebe9e4] border border-[#d4d1c8] shadow-2xl relative space-y-4">
                 
-                {/* Course Banner Image Preview */}
-                <div className="relative aspect-video w-full bg-[#121212] overflow-hidden group">
-                  <img 
-                    src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80" 
-                    alt="LMS Masterclass"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-80" />
-                  
-                  {/* Floating Live Badge */}
-                  <div className="absolute top-3 left-3 bg-[#121212]/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#d4d1c8]/30 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    <span className="text-[11px] font-bold text-white font-mono uppercase">Interactive LMS</span>
+                {/* Browser Top Window Controls */}
+                <div className="flex items-center gap-1.5 pb-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#f85e00]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#121212]/40" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#121212]/20" />
+                </div>
+
+                {/* Floating 132% Growth Pill */}
+                <div className="absolute -top-6 -right-3 sm:-right-6 bg-[#121212] text-white p-3.5 rounded-2xl shadow-2xl border border-[#d4d1c8]/20 max-w-[200px] z-20 space-y-1">
+                  <div className="flex items-center gap-1 text-[#f85e00] font-extrabold text-xs">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>132% GROWTH</span>
+                  </div>
+                  <p className="text-[10px] text-[#ebe9e4]/80 leading-tight">
+                    Our learners achieve measurable career growth through targeted skill mastery.
+                  </p>
+                </div>
+
+                {/* Inner Dark Lesson Module Card */}
+                <div className="bg-[#121212] text-white rounded-2xl p-5 border border-[#252525] shadow-lg space-y-3">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#f85e00] font-bold">
+                    <span>INTERACTIVE LESSON MODULE</span>
+                    <span className="text-white bg-[#252525] px-2 py-0.5 rounded">4.9 ★</span>
                   </div>
 
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-2xl bg-[#f85e00] text-white flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                      <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                  <h3 className="text-base font-extrabold text-white tracking-tight">
+                    Full-Stack Web Dev & AI Engineering
+                  </h3>
+                  <p className="text-[11px] text-[#ebe9e4]/70 leading-relaxed font-medium">
+                    Building production-ready applications with hands-on guidance.
+                  </p>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5 pt-2 border-t border-[#252525]">
+                    <div className="flex items-center justify-between text-[10px] font-mono font-bold">
+                      <span className="text-[#ebe9e4]/60">Module 04 / 10</span>
+                      <span className="text-[#f85e00]">72% Complete</span>
+                    </div>
+                    <div className="w-full bg-[#252525] h-2 rounded-full overflow-hidden">
+                      <div className="bg-[#f85e00] h-full w-[72%] rounded-full" />
                     </div>
                   </div>
                 </div>
 
-                {/* Card Meta Content */}
-                <div className="p-5 space-y-3 bg-[#f5f4f0]">
-                  <div className="flex items-center justify-between">
-                    <span className="bg-[#121212] text-[#f85e00] px-2.5 py-1 rounded-md text-xs font-mono font-bold">
-                      FLAGSHIP TRACK
+                {/* Bottom Learning Matrix Strip */}
+                <div className="bg-[#121212] rounded-2xl p-4 flex items-center justify-between border border-[#252525]">
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-[#f85e00] block uppercase tracking-wider">
+                      LEARNING MATRIX
                     </span>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#121212]">
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <span>4.9 (1.8k reviews)</span>
-                    </div>
+                    <span className="text-xs font-black text-white tracking-wide">
+                      FLUX ACADEMY
+                    </span>
                   </div>
-
-                  <h3 className="font-extrabold text-lg text-[#121212]">
-                    Full-Stack Next.js 15 & Enterprise AI Architecture
-                  </h3>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-[#d4d1c8] text-xs font-medium text-[#5a5955]">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" 
-                        alt="Instructor" 
-                        className="w-6 h-6 rounded-full object-cover border border-[#121212]"
-                      />
-                      <span>Sarah Jenkins</span>
-                    </div>
-                    <span className="font-mono font-bold text-[#121212]">24 Modules • DRM Secured</span>
+                  <div className="w-7 h-7 rounded-full bg-[#f85e00] shadow-md flex items-center justify-center text-white text-xs font-black">
+                    •
                   </div>
                 </div>
 
